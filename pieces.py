@@ -30,7 +30,7 @@ class King(Piece):
         super().__init__(color, position)
 
     def __str__(self):
-        return 'K' if self.color == 'white' else 'k'
+        return '\u2654' if self.color == 'white' else '\u265A'
     
     def valid_moves(self, board, start_pos, end_pos):
         """
@@ -70,7 +70,7 @@ class Queen(Piece):
         super().__init__(color, position)
     
     def __str__(self):
-        return 'Q' if self.color == 'white' else 'q'
+        return '\u2655' if self.color == 'white' else '\u265B'
     
     def valid_moves(self, board, start_pos, end_pos):
         """
@@ -147,7 +147,7 @@ class Rook(Piece):
         self.has_moved = False  # For castling purposes
 
     def __str__(self):
-        return 'R' if self.color == 'white' else 'r'
+        return '\u2656' if self.color == 'white' else '\u265C'
     
     def valid_moves(self, board, start_pos, end_pos):
         """
@@ -206,7 +206,7 @@ class Bishop(Piece):
         super().__init__(color, position)
     
     def __str__(self):
-        return 'B' if self.color == 'white' else 'b'
+        return '\u2657' if self.color == 'white' else '\u265D'
     
     def valid_moves(self, board, start_pos, end_pos):
         """
@@ -260,7 +260,7 @@ class Knight(Piece):
         super().__init__(color, position)
     
     def __str__(self):
-        return 'N' if self.color == 'white' else 'n'
+        return '\u2658' if self.color == 'white' else '\u265E'
     
     def valid_moves(self, board, start_pos, end_pos):
         """
@@ -301,7 +301,7 @@ class Pawn(Piece):
         self.has_moved = False  # Tracks whether the pawn has moved
         
     def __str__(self):
-        return 'P' if self.color == 'white' else 'p'
+        return '\u2659' if self.color == 'white' else '\u265F'
     
     def valid_moves(self, board, start_pos, end_pos, last_move):
         """
