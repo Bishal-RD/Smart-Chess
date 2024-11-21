@@ -30,7 +30,7 @@ class King(Piece):
         super().__init__(color, position)
 
     def __str__(self):
-        return 'K' if self.color == 'white' else 'k'
+        return '\u2654' if self.color == 'white' else '\u265A'
     
     def valid_moves(self, board, start_pos, end_pos):
         """
@@ -70,7 +70,7 @@ class Queen(Piece):
         super().__init__(color, position)
     
     def __str__(self):
-        return 'Q' if self.color == 'white' else 'q'
+        return '\u2655' if self.color == 'white' else '\u265B'
     
     def valid_moves(self, board, start_pos, end_pos):
         """
@@ -147,7 +147,7 @@ class Rook(Piece):
         self.has_moved = False  # For castling purposes
 
     def __str__(self):
-        return 'R' if self.color == 'white' else 'r'
+        return '\u2656' if self.color == 'white' else '\u265C'
     
     def valid_moves(self, board, start_pos, end_pos):
         """
@@ -206,7 +206,7 @@ class Bishop(Piece):
         super().__init__(color, position)
     
     def __str__(self):
-        return 'B' if self.color == 'white' else 'b'
+        return '\u2657' if self.color == 'white' else '\u265D'
     
     def valid_moves(self, board, start_pos, end_pos):
         """
@@ -260,7 +260,7 @@ class Knight(Piece):
         super().__init__(color, position)
     
     def __str__(self):
-        return 'N' if self.color == 'white' else 'n'
+        return '\u2658' if self.color == 'white' else '\u265E'
     
     def valid_moves(self, board, start_pos, end_pos):
         """
@@ -301,9 +301,9 @@ class Pawn(Piece):
         self.has_moved = False  # Tracks whether the pawn has moved
         
     def __str__(self):
-        return 'P' if self.color == 'white' else 'p'
+        return '\u2659' if self.color == 'white' else '\u265F'
     
-    def valid_moves(self, board, start_pos, end_pos):
+    def valid_moves(self, board, start_pos, end_pos, last_move):
         """
         Determines if moving the pawn from start_pos to end_pos is valid.
 
@@ -347,11 +347,54 @@ class Pawn(Piece):
                     if (board[intermediate_row][start_col] is None and
                             board[end_row][end_col] is None):
                         return True
+                    
         elif abs(col_diff) == 1 and row_diff == direction:
             # Diagonal capture
             target_piece = board[end_row][end_col]
             if target_piece and target_piece.color != self.color:
                 return True
+            else:
+                # En passant capture
+                # Check if the last move was an opponent's pawn moving two squares forward
+                if last_move:
+                    last_start_pos, last_end_pos = last_move
+                    last_start_row, last_start_col = position_to_indices(last_start_pos)
+                    last_end_row, last_end_col = position_to_indices(last_end_pos)
+                    last_moved_piece = board[last_end_row][last_end_col]
+                    if isinstance(last_moved_piece, Pawn) and last_moved_piece.color != self.color:
+                        # Check if the pawn moved two squares forward
+                        if abs(last_end_row - last_start_row) == 2:
+                            # Check if the pawn is adjacent to our pawn
+                            if last_end_row == start_row and last_end_col == end_col:
+                                # En passant capture is possible
+                                return True
 
         # If none of the valid moves apply
         return False
+    
+    def promote_pawn(self, color, end_pos):
+        """
+        Promotes a pawn to a new piece chosen by the player.
+
+        Parameters:
+        - color: The color of the pawn ('white' or 'black').
+
+        Returns:
+        - The new piece object to replace the pawn.
+        """
+        # In a real game, you might prompt the user for input.
+        # For this example, we'll default to a Queen or allow the player to choose.
+
+        while True:
+            choice = input(f"Promote pawn to (Q)ueen, (R)ook, (B)ishop, or k(N)ight? ").strip().upper()
+            if choice == 'Q':
+                return Queen(color, end_pos)
+            elif choice == 'R':
+                return Rook(color, end_pos)
+            elif choice == 'B':
+                return Bishop(color, end_pos)
+            elif choice == 'N':
+                return Knight(color, end_pos)
+            else:
+                print("Invalid choice. Please enter Q, R, B, or N.")
+
