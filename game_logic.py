@@ -117,7 +117,7 @@ def check_game_status(board, color, last_move):
         if not legal_moves:
             # Player is in checkmate
             winner = 'black' if color == 'white' else 'white'
-            print(f"Checkmate! {winner.capitalize()} wins.")
+            # print(f"Checkmate! {winner.capitalize()} wins.")
             return True, f"{winner}_win"
     else:
         # Player is not in check but may have no legal moves (stalemate)
