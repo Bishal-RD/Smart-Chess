@@ -1,6 +1,7 @@
-from utils import get_piece_info, move_piece
+from utils import get_piece_info
+from game_logic import move_piece
 from board import initialize_board, print_board
-from game_status import check_game_status
+from game_logic import check_game_status
 from algorithm import minimax
 
 def main():
@@ -11,11 +12,13 @@ def main():
     human_color = 'white'  # Human plays white
     ai_color = 'black'     # AI plays black
     turn = 'white'         # White starts first
+    last_move = None  # Keep track of the last move
 
     while True:
         print(f"\n{turn.capitalize()}'s turn")
         # Check if the game is over before the player's move
-        game_over, result = check_game_status(board, turn)
+        game_over, result = check_game_status(board, turn, last_move=last_move)
+
         if game_over:
             break
 
@@ -32,7 +35,9 @@ def main():
                     print(f"It's {turn}'s turn. Please move your own pieces.")
                     continue
                 # Attempt to move the piece
-                if move_piece(board, start_pos, end_pos):
+                if move_piece(board, start_pos, end_pos, last_move):
+                    # Update the last move
+                    last_move = (start_pos, end_pos)
                     print_board(board)
                     # Switch turns
                     turn = ai_color
@@ -47,10 +52,10 @@ def main():
             # AI's turn
             print("AI is thinking...")
             evaluation, ai_move = minimax(board, depth=3, alpha=float('-inf'), beta=float('inf'),
-                                          maximizing_player=True, current_color=ai_color)
+                                          maximizing_player=True, current_color=ai_color, last_move=last_move)
             if ai_move:
                 start_pos, end_pos = ai_move
-                move_piece(board, start_pos, end_pos)
+                move_piece(board, start_pos, end_pos, last_move)
                 print(f"AI moved from {start_pos} to {end_pos}")
                 print_board(board)
                 # Switch turns
