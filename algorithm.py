@@ -1,5 +1,7 @@
-from board import position_to_indices
-from game_status import check_game_status, get_all_legal_moves
+import copy
+from pieces import Pawn
+from utils import position_to_indices
+from game_logic import check_game_status, get_all_legal_moves, move_piece_simulation
 
 def evaluate_board(board, color):
     """
@@ -13,20 +15,31 @@ def evaluate_board(board, color):
     - A numerical value representing the board's desirability.
     """
     piece_values = {
-        'Pawn': 1,
-        'Knight': 3,
-        'Bishop': 3,
-        'Rook': 5,
-        'Queen': 9,
-        'King': 0  # King's value is typically considered infinite, but we can use 0 here
+        'Pawn': 10,
+        'Knight': 30,
+        'Bishop': 30,
+        'Rook': 50,
+        'Queen': 90,
+        'King': 900
     }
 
     total_value = 0
 
-    for row in board:
-        for piece in row:
+    for row in range(8):
+        for col in range(8):
+            piece = board[row][col]
             if piece:
                 value = piece_values[type(piece).__name__]
+                # Add positional bonuses (e.g., center control)
+                position_bonus = 0
+                if isinstance(piece, Pawn):
+                    # Pawns get bonus for advancing
+                    if piece.color == 'white':
+                        position_bonus = (6 - row)
+                    else:
+                        position_bonus = (row - 1)
+                # Combine piece value and positional bonus
+                value += position_bonus
                 if piece.color == color:
                     total_value += value
                 else:
@@ -34,11 +47,8 @@ def evaluate_board(board, color):
 
     return total_value
 
-# algorithm.py (continued)
 
-import copy
-
-def minimax(board, depth, alpha, beta, maximizing_player, current_color):
+def minimax(board, depth, alpha, beta, maximizing_player, current_color, last_move):
     """
     Minimax algorithm with alpha-beta pruning.
 
@@ -49,18 +59,24 @@ def minimax(board, depth, alpha, beta, maximizing_player, current_color):
     - beta: The best already explored option along the path to the root for the minimizer.
     - maximizing_player: True if the current move is for the maximizing player.
     - current_color: 'white' or 'black' indicating whose turn it is.
+    - last_move: The last move made in the game, required for en passant.
 
     Returns:
     - A tuple (value, move), where 'value' is the evaluation of the board,
       and 'move' is the best move found.
     """
     # Base case: maximum depth reached or game over
-    game_over, result = check_game_status(board, current_color)
+    game_over, result = check_game_status(board, current_color, last_move)
     if depth == 0 or game_over:
         evaluation = evaluate_board(board, 'black')  # Assuming AI plays black
         return evaluation, None
 
-    legal_moves = get_all_legal_moves(board, current_color)
+    legal_moves = get_all_legal_moves(board, current_color, last_move)
+
+    if not legal_moves:
+        # No legal moves available
+        evaluation = evaluate_board(board, 'black')
+        return evaluation, None
 
     if maximizing_player:
         max_eval = float('-inf')
@@ -69,9 +85,14 @@ def minimax(board, depth, alpha, beta, maximizing_player, current_color):
             start_pos, end_pos = move
             # Make a deep copy of the board to simulate the move
             new_board = copy.deepcopy(board)
-            piece = new_board[position_to_indices(start_pos)[0]][position_to_indices(start_pos)[1]]
-            move_piece_simulation(new_board, piece, start_pos, end_pos)
-            evaluation, _ = minimax(new_board, depth - 1, alpha, beta, False, 'white')
+            # Get the piece from the new board
+            start_row, start_col = position_to_indices(start_pos)
+            piece = new_board[start_row][start_col]
+            # Simulate the move
+            move_piece_simulation(new_board, piece, start_pos, end_pos, last_move)
+            new_last_move = (start_pos, end_pos)
+            # Recursive call, switch player and color
+            evaluation, _ = minimax(new_board, depth - 1, alpha, beta, False, 'white', new_last_move)
             if evaluation > max_eval:
                 max_eval = evaluation
                 best_move = move
@@ -85,9 +106,11 @@ def minimax(board, depth, alpha, beta, maximizing_player, current_color):
         for move in legal_moves:
             start_pos, end_pos = move
             new_board = copy.deepcopy(board)
-            piece = new_board[position_to_indices(start_pos)[0]][position_to_indices(start_pos)[1]]
-            move_piece_simulation(new_board, piece, start_pos, end_pos)
-            evaluation, _ = minimax(new_board, depth - 1, alpha, beta, True, 'black')
+            start_row, start_col = position_to_indices(start_pos)
+            piece = new_board[start_row][start_col]
+            move_piece_simulation(new_board, piece, start_pos, end_pos, last_move)
+            new_last_move = (start_pos, end_pos)
+            evaluation, _ = minimax(new_board, depth - 1, alpha, beta, True, 'black', new_last_move)
             if evaluation < min_eval:
                 min_eval = evaluation
                 best_move = move
@@ -95,27 +118,3 @@ def minimax(board, depth, alpha, beta, maximizing_player, current_color):
             if beta <= alpha:
                 break  # Alpha cutoff
         return min_eval, best_move
-    
-# algorithm.py (continued)
-
-def move_piece_simulation(board, piece, start_pos, end_pos):
-    """
-    Simulates moving a piece on the board copy.
-
-    Parameters:
-    - board: The board copy on which to simulate the move.
-    - piece: The piece to move.
-    - start_pos: The starting position of the piece.
-    - end_pos: The ending position of the piece.
-    """
-    start_row, start_col = position_to_indices(start_pos)
-    end_row, end_col = position_to_indices(end_pos)
-    # Move the piece
-    board[end_row][end_col] = piece
-    board[start_row][start_col] = None
-    # Update the piece's position
-    piece.position = end_pos
-    # If the piece has a 'has_moved' attribute, set it to True
-    if hasattr(piece, 'has_moved'):
-        piece.has_moved = True
-
