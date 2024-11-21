@@ -1,6 +1,6 @@
 import copy
 import random
-from evaluate import evaluate_pawn_structure, evaluate_king_safety, evaluate_center_control
+from pieces import Pawn
 from evaluate import get_move_weight
 from utils import position_to_indices
 from game_logic import check_game_status, get_all_legal_moves, move_piece_simulation
@@ -14,165 +14,40 @@ def evaluate_board(board, color, last_move):
     - color: 'white' or 'black'.
 
     Returns:
-    - A numerical value representing the board's desirability for the given color.
-      Positive values favor the given color, negative values favor the opponent.
+    - A numerical value representing the board's desirability.
     """
-    import copy
-
-    # Piece values
     piece_values = {
-        'Pawn': 100,
-        'Knight': 320,
-        'Bishop': 330,
-        'Rook': 500,
-        'Queen': 900,
-        'King': 20000  # High value to prioritize king safety
+        'Pawn': 10,
+        'Knight': 30,
+        'Bishop': 30,
+        'Rook': 50,
+        'Queen': 90,
+        'King': 900
     }
 
-    # Positional tables for each piece type (simplified for demonstration)
-    pawn_table = [
-        [0, 0, 0, 0, 0, 0, 0, 0],
-        [50, 50, 50, 50, 50, 50, 50, 50],
-        [10, 10, 20, 30, 30, 20, 10, 10],
-        [5, 5, 10, 25, 25, 10, 5, 5],
-        [0, 0, 0, 20, 20, 0, 0, 0],
-        [5, -5, -10, 0, 0, -10, -5, 5],
-        [5, 10, 10, -20, -20, 10, 10, 5],
-        [0, 0, 0, 0, 0, 0, 0, 0]
-    ]
+    total_value = 0
 
-    knight_table = [
-        [-50, -40, -30, -30, -30, -30, -40, -50],
-        [-40, -20, 0, 5, 5, 0, -20, -40],
-        [-30, 5, 10, 15, 15, 10, 5, -30],
-        [-30, 0, 15, 20, 20, 15, 0, -30],
-        [-30, 5, 15, 20, 20, 15, 5, -30],
-        [-30, 0, 10, 15, 15, 10, 0, -30],
-        [-40, -20, 0, 0, 0, 0, -20, -40],
-        [-50, -40, -30, -30, -30, -30, -40, -50]
-    ]
-
-    bishop_table = [
-        [-20, -10, -10, -10, -10, -10, -10, -20],
-        [-10, 0, 0, 0, 0, 0, 0, -10],
-        [-10, 0, 5, 10, 10, 5, 0, -10],
-        [-10, 5, 5, 10, 10, 5, 5, -10],
-        [-10, 0, 10, 10, 10, 10, 0, -10],
-        [-10, 10, 10, 10, 10, 10, 10, -10],
-        [-10, 5, 0, 0, 0, 0, 5, -10],
-        [-20, -10, -10, -10, -10, -10, -10, -20]
-    ]
-
-    rook_table = [
-        [0, 0, 0, 0, 0, 0, 0, 0],
-        [5, 10, 10, 10, 10, 10, 10, 5],
-        [-5, 0, 0, 0, 0, 0, 0, -5],
-        [-5, 0, 0, 0, 0, 0, 0, -5],
-        [-5, 0, 0, 0, 0, 0, 0, -5],
-        [-5, 0, 0, 0, 0, 0, 0, -5],
-        [-5, 0, 0, 0, 0, 0, 0, -5],
-        [0, 0, 0, 5, 5, 0, 0, 0]
-    ]
-
-    queen_table = [
-        [-20, -10, -10, -5, -5, -10, -10, -20],
-        [-10, 0, 0, 0, 0, 0, 0, -10],
-        [-10, 0, 5, 5, 5, 5, 0, -10],
-        [-5, 0, 5, 5, 5, 5, 0, -5],
-        [0, 0, 5, 5, 5, 5, 0, -5],
-        [-10, 5, 5, 5, 5, 5, 0, -10],
-        [-10, 0, 5, 0, 0, 0, 0, -10],
-        [-20, -10, -10, -5, -5, -10, -10, -20]
-    ]
-
-    king_table = [
-        [-30, -40, -40, -50, -50, -40, -40, -30],
-        [-30, -40, -40, -50, -50, -40, -40, -30],
-        [-30, -40, -40, -50, -50, -40, -40, -30],
-        [-30, -40, -40, -50, -50, -40, -40, -30],
-        [-20, -30, -30, -40, -40, -30, -30, -20],
-        [-10, -20, -20, -20, -20, -20, -20, -10],
-        [20, 20, 0, 0, 0, 0, 20, 20],
-        [20, 30, 10, 0, 0, 10, 30, 20]
-    ]
-
-    # Initialize total evaluation
-    total_evaluation = 0
-
-    # Mobility counts
-    own_mobility = 0
-    opponent_mobility = 0
-
-    # List to hold positions of pieces for king safety and pawn structure
-    own_pawns = []
-    own_king_position = None
-
-    # Get opponent's color
-    opponent_color = 'black' if color == 'white' else 'white'
-
-    # Calculate material and positional value
     for row in range(8):
         for col in range(8):
             piece = board[row][col]
             if piece:
-                piece_type = type(piece).__name__
-                piece_value = piece_values[piece_type]
-
-                # Positional bonus
-                if piece_type == 'Pawn':
-                    table = pawn_table
-                elif piece_type == 'Knight':
-                    table = knight_table
-                elif piece_type == 'Bishop':
-                    table = bishop_table
-                elif piece_type == 'Rook':
-                    table = rook_table
-                elif piece_type == 'Queen':
-                    table = queen_table
-                elif piece_type == 'King':
-                    table = king_table
-                else:
-                    table = [[0]*8]*8  # Default to zero if not specified
-
-                # Adjust for piece color
-                if piece.color == 'white':
-                    position_bonus = table[row][col]
-                else:
-                    position_bonus = table[7 - row][col]
-
-                # Total piece value including positional bonus
-                total_piece_value = piece_value + position_bonus
-
+                value = piece_values[type(piece).__name__]
+                # Add positional bonuses (e.g., center control)
+                position_bonus = 0
+                if isinstance(piece, Pawn):
+                    # Pawns get bonus for advancing
+                    if piece.color == 'white':
+                        position_bonus = (6 - row)
+                    else:
+                        position_bonus = (row - 1)
+                # Combine piece value and positional bonus
+                value += position_bonus
                 if piece.color == color:
-                    total_evaluation += total_piece_value
-                    # Collect own pawns and king position
-                    if piece_type == 'Pawn':
-                        own_pawns.append((row, col))
-                    if piece_type == 'King':
-                        own_king_position = (row, col)
+                    total_value += value
                 else:
-                    total_evaluation -= total_piece_value
+                    total_value -= value
 
-    # Evaluate mobility
-    own_mobility = len(get_all_legal_moves(board, color, last_move))
-    opponent_mobility = len(get_all_legal_moves(board, opponent_color, last_move))
-
-    # Add mobility to evaluation
-    mobility_score = own_mobility - opponent_mobility
-    total_evaluation += 10 * mobility_score  # Weight mobility by 10
-
-    # Evaluate pawn structure
-    total_evaluation += evaluate_pawn_structure(board, color, own_pawns)
-
-    # Evaluate king safety
-    total_evaluation += evaluate_king_safety(board, color, own_king_position, last_move)
-
-    # Evaluate control of the center
-    total_evaluation += evaluate_center_control(board, color)
-
-    return total_evaluation
-
-
+    return total_value
 
 def minimax(board, depth, alpha, beta, maximizing_player, current_color, last_move):
     """
