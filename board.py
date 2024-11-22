@@ -82,71 +82,65 @@ def print_board(board):
     print("    " + " ".join('a b c d e f g h'.split()))
 
 
-def initialize_board(player_color):
+def initialize_board(fen="rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"):
     """
-    Initializes the chessboard with pieces for the given player color.
-    The player's color pieces are placed on ranks 1 and 2.
-    The opponent's color pieces are placed on ranks 7 and 8.
-
-    Parameters:
-    - player_color (str): 'white' or 'black', representing the player's color.
-
+    Initializes the chessboard based on a FEN string.
+    
+    Args:
+        fen (str, optional): Forsyth-Edwards Notation string representing the board state.
+                             Defaults to the standard starting position.
+                             
     Returns:
-    - board (list): 2D list representing the chessboard with pieces.
+        list: 8x8 list of lists representing the chessboard with Piece instances or None.
     """
     # Initialize an empty 8x8 board
     board = [[None for _ in range(8)] for _ in range(8)]
-
-    # Determine the opponent's color
-    opponent_color = 'white' if player_color == 'black' else 'black'
-
-    # Player's pieces (a1-h1 for player_color)
-    player_pieces = [
-        Rook(player_color, 'a1'),
-        Knight(player_color, 'b1'),
-        Bishop(player_color, 'c1'),
-        Queen(player_color, 'd1'),
-        King(player_color, 'e1'),
-        Bishop(player_color, 'f1'),
-        Knight(player_color, 'g1'),
-        Rook(player_color, 'h1'),
-        Pawn(player_color, 'a2'),
-        Pawn(player_color, 'b2'),
-        Pawn(player_color, 'c2'),
-        Pawn(player_color, 'd2'),
-        Pawn(player_color, 'e2'),
-        Pawn(player_color, 'f2'),
-        Pawn(player_color, 'g2'),
-        Pawn(player_color, 'h2'),
-    ]
-
-    # Opponent's pieces (a8-h8 for opponent_color)
-    opponent_pieces = [
-        Pawn(opponent_color, 'a7'),
-        Pawn(opponent_color, 'b7'),
-        Pawn(opponent_color, 'c7'),
-        Pawn(opponent_color, 'd7'),
-        Pawn(opponent_color, 'e7'),
-        Pawn(opponent_color, 'f7'),
-        Pawn(opponent_color, 'g7'),
-        Pawn(opponent_color, 'h7'),
-        Rook(opponent_color, 'a8'),
-        Knight(opponent_color, 'b8'),
-        Bishop(opponent_color, 'c8'),
-        Queen(opponent_color, 'd8'),
-        King(opponent_color, 'e8'),
-        Bishop(opponent_color, 'f8'),
-        Knight(opponent_color, 'g8'),
-        Rook(opponent_color, 'h8'),
-    ]
-
-    # Combine all pieces
-    all_pieces = player_pieces + opponent_pieces
-
-    # Place each piece on the board according to its position
-    for piece in all_pieces:
-        position_str = piece.position  # e.g., 'e4'
-        row, col = position_to_indices(position_str)
-        board[row][col] = piece
-
+    
+    # Split the FEN string into its components
+    fen_parts = fen.split(' ')
+    if len(fen_parts) != 6:
+        raise ValueError("Invalid FEN string: Incorrect number of fields.")
+    
+    piece_placement, active_color, castling, en_passant, halfmove_clock, fullmove_number = fen_parts
+    
+    # Split the piece placement into ranks
+    ranks = piece_placement.split('/')
+    if len(ranks) != 8:
+        raise ValueError("Invalid FEN string: Incorrect number of ranks.")
+    
+    # Iterate over each rank and place pieces on the board
+    for i, rank_str in enumerate(ranks):
+        row = 7 - i  # FEN starts from rank 8 (row 7) to rank 1 (row 0)
+        col = 0
+        for char in rank_str:
+            if char.isdigit():
+                # Empty squares
+                empty_squares = int(char)
+                col += empty_squares
+            elif char.isalpha():
+                # Place the corresponding piece
+                color = 'white' if char.isupper() else 'black'
+                piece_char = char.upper()
+                position = indices_to_position(row, col)
+                
+                if piece_char == 'K':
+                    piece = King(color, position)
+                elif piece_char == 'Q':
+                    piece = Queen(color, position)
+                elif piece_char == 'R':
+                    piece = Rook(color, position)
+                elif piece_char == 'B':
+                    piece = Bishop(color, position)
+                elif piece_char == 'N':
+                    piece = Knight(color, position)
+                elif piece_char == 'P':
+                    piece = Pawn(color, position)
+                else:
+                    raise ValueError(f"Invalid piece character in FEN: {char}")
+                
+                board[row][col] = piece
+                col += 1
+            else:
+                raise ValueError(f"Invalid character in FEN piece placement: {char}")
+    
     return board

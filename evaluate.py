@@ -54,8 +54,8 @@ def get_attackers(board, position, opponent_color, last_move):
         for c in range(8):
             piece = board[r][c]
             if piece and piece.color == opponent_color:
-                start_pos = indices_to_position(c, r)
-                end_pos = indices_to_position(col, row)
+                start_pos = indices_to_position(r, c)
+                end_pos = indices_to_position(row, col)
                 if isinstance(piece, Pawn):
                     is_valid = piece.valid_moves(board, start_pos, end_pos, last_move)
                 else:
