@@ -370,9 +370,9 @@ class Pawn(Piece):
         
         # Calculate the direction of movement
         if self.color == 'white':
-            direction = -1  # White moves up (decreasing row index)
+            direction = 1  # White moves up (decreasing row index)
         else:
-            direction = 1   # Black moves down (increasing row index)
+            direction = -1   # Black moves down (increasing row index)
 
         # Calculate movement differences
         col_diff = end_col - start_col
