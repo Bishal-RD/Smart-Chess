@@ -155,10 +155,24 @@ def move_piece(board, start_pos, end_pos, last_move):
 
         # Handle pawn promotion
         if isinstance(piece, Pawn):
+
             promotion_row = 0 if piece.color == 'white' else 7
             if end_row == promotion_row:
                 # Pawn reaches the last rank, promotion occurs
-                promoted_piece = piece.promote_pawn(piece.color, end_pos)
+                player_is_human = True if piece.color == 'white' else False
+                
+                if player_is_human:
+                    while True:
+                        choice = input(f"Promote pawn to (Q)ueen, (R)ook, (B)ishop, or k(N)ight? ").strip().upper()
+                        if choice in ['Q', 'R', 'B', 'N']:
+                            break
+                        else:
+                            print("Invalid choice. Please enter Q, R, B, or N.")
+                else:
+                    # For AI, decide promotion choice (default to Queen)
+                    choice = 'Q'
+
+                promoted_piece = piece.promote_pawn(piece.color, end_pos, promotion_choice=choice)
                 board[end_row][end_col] = promoted_piece
                 print(f"{piece.color.capitalize()} Pawn promoted to {type(promoted_piece).__name__} at {end_pos}")
             else:

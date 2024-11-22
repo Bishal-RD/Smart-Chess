@@ -417,29 +417,27 @@ class Pawn(Piece):
         # If none of the valid moves apply
         return False
     
-    def promote_pawn(self, color, end_pos):
+    def promote_pawn(self, color, end_pos, promotion_choice='Q'):
         """
-        Promotes a pawn to a new piece chosen by the player.
+        Promotes a pawn to a new piece based on the provided choice.
 
         Parameters:
-        - color: The color of the pawn ('white' or 'black').
+        - color (str): The color of the pawn ('white' or 'black').
+        - end_pos (str): The position where the pawn is promoted (e.g., 'e8').
+        - promotion_choice (str, optional): The piece to promote to ('Q', 'R', 'B', 'N'). Defaults to 'Q'.
 
         Returns:
-        - The new piece object to replace the pawn.
+        - Piece: The new piece object to replace the pawn.
         """
-        # In a real game, you might prompt the user for input.
-        # For this example, we'll default to a Queen or allow the player to choose.
+        promotion_map = {
+            'Q': Queen,
+            'R': Rook,
+            'B': Bishop,
+            'N': Knight
+        }
 
-        while True:
-            choice = input(f"Promote pawn to (Q)ueen, (R)ook, (B)ishop, or k(N)ight? ").strip().upper()
-            if choice == 'Q':
-                return Queen(color, end_pos)
-            elif choice == 'R':
-                return Rook(color, end_pos)
-            elif choice == 'B':
-                return Bishop(color, end_pos)
-            elif choice == 'N':
-                return Knight(color, end_pos)
-            else:
-                print("Invalid choice. Please enter Q, R, B, or N.")
+        PromotionClass = promotion_map.get(promotion_choice.upper(), Queen)  # Default to Queen
+
+        return PromotionClass(color, end_pos)
+
 

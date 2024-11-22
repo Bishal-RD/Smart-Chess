@@ -1,0 +1,9 @@
+[Event "Smart Chess Game"]
+[Site "Local"]
+[Date "2024.11.22"]
+[Round "1"]
+[White "Human"]
+[Black "AI"]
+[Result "*"]
+
+1. h4 e6 2. c4 Bc5 3. b4 Bd4 *

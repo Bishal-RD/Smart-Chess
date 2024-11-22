@@ -113,28 +113,8 @@ def decode_move(move, board, player='white', last_move=None):
     if len(valid_moves) == 1:
         start_pos = valid_moves[0]
         end_pos = to_square
-
-        # Handle promotion if applicable
-        if promotion_piece:
-            # Replace the pawn with the promoted piece
-            promotion_map = {
-                'Q': Queen,
-                'R': Rook,
-                'B': Bishop,
-                'N': Knight
-            }
-            PromotionClass = promotion_map.get(promotion_piece, Queen)  # Default to Queen
-
-            promoted_piece = PromotionClass(player, end_pos)
-
-            # Update the board: place the promoted piece and remove the pawn
-            end_row, end_col = position_to_indices(end_pos)
-            board[end_row][end_col] = promoted_piece
-
-            start_row, start_col = position_to_indices(start_pos)
-            board[start_row][start_col] = None
-
         return f"{start_pos} {end_pos}"
+    
     elif len(valid_moves) > 1:
         # Ambiguous move: multiple pieces can perform the move
         return f"Ambiguous move: {move}. Possible starting squares: {', '.join(valid_moves)}"
