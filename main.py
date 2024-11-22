@@ -5,14 +5,15 @@ from game_logic import check_game_status
 from algorithm import minimax
 
 def main():
-    board = initialize_board()
     print("Welcome to the Chess Game!")
-    print_board(board)
     
     human_color = 'white'  # Human plays white
     ai_color = 'black'     # AI plays black
     turn = 'white'         # White starts first
     last_move = None  # Keep track of the last move
+
+    board = initialize_board("white")
+    print_board(board)
 
     while True:
         print(f"\n{turn.capitalize()}'s turn")
