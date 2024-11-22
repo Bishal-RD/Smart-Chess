@@ -1,6 +1,6 @@
 from utils import get_piece_info
 from game_logic import move_piece
-from board import initialize_board, print_board
+from board import initialize_board, print_board, board_to_fen
 from game_logic import check_game_status
 from algorithm import minimax
 
@@ -16,6 +16,9 @@ def main():
     print_board(board)
 
     while True:
+        fen = board_to_fen(board)
+        print("FEN:", fen)
+
         print(f"\n{turn.capitalize()}'s turn")
         # Check if the game is over before the player's move
         game_over, result = check_game_status(board, turn, last_move=last_move)
@@ -24,8 +27,8 @@ def main():
             break
 
         if turn == human_color:
-            move_input = input("Enter your move (e.g., e2 e4) or 'exit' to quit: ").strip()
-            if move_input.lower() == 'exit':
+            move_input = input("Enter your move (e.g., e2 e4) or 'q' to quit: ").strip()
+            if move_input.lower() == 'q':
                 print("Thank you for playing!")
                 break
             try:

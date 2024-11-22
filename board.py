@@ -1,6 +1,67 @@
 from pieces import *
 from utils import position_to_indices
 
+def board_to_fen(board, active_color='w', castling_rights='KQkq', en_passant='-', halfmove_clock=0, fullmove_number=1):
+    """
+    Converts the current board state to a FEN string.
+
+    Args:
+        board (list of list): The chessboard represented as an 8x8 list of lists.
+                              Each element is either None or an instance of a Piece subclass.
+        active_color (str): 'w' if white to move, 'b' if black to move.
+        castling_rights (str): Castling availability (e.g., 'KQkq', 'Kq', '-').
+        en_passant (str): En passant target square (e.g., 'e3'), or '-' if not available.
+        halfmove_clock (int): Number of halfmoves since the last pawn advance or capture.
+        fullmove_number (int): The number of full moves. It starts at 1 and increments after Black's move.
+
+    Returns:
+        str: The FEN string representing the board state.
+    """
+    # Helper mapping from Piece class to FEN character
+    def piece_to_fen(piece):
+        if piece is None:
+            return ''
+        piece_type = type(piece).__name__
+        color = piece.color
+        fen_char = ''
+        if piece_type == 'King':
+            fen_char = 'K'
+        elif piece_type == 'Queen':
+            fen_char = 'Q'
+        elif piece_type == 'Rook':
+            fen_char = 'R'
+        elif piece_type == 'Bishop':
+            fen_char = 'B'
+        elif piece_type == 'Knight':
+            fen_char = 'N'
+        elif piece_type == 'Pawn':
+            fen_char = 'P'
+        else:
+            raise ValueError(f"Unknown piece type: {piece_type}")
+
+        return fen_char.upper() if color == 'white' else fen_char.lower()
+
+    fen_rows = []
+    for row in board:
+        fen_row = ''
+        empty_count = 0
+        for cell in row:
+            if cell is None:
+                empty_count += 1
+            else:
+                if empty_count > 0:
+                    fen_row += str(empty_count)
+                    empty_count = 0
+                fen_row += piece_to_fen(cell)
+        if empty_count > 0:
+            fen_row += str(empty_count)
+        fen_rows.append(fen_row)
+    
+    piece_placement = '/'.join(fen_rows)
+    fen = f"{piece_placement} {active_color} {castling_rights} {en_passant} {halfmove_clock} {fullmove_number}"
+    return fen
+
+
 def print_board(board):
     """
     Prints the chessboard in standard chess notation.
