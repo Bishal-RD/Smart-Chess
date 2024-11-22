@@ -1,4 +1,5 @@
-from utils import position_to_indices
+from utils import position_to_indices, indices_to_position
+from checked import is_square_attacked, is_in_check
 
 class Piece:
     def __init__(self, color, position):
@@ -28,22 +29,12 @@ class Piece:
 class King(Piece):
     def __init__(self, color, position):
         super().__init__(color, position)
+        self.has_moved = False  # Track if the king has moved
 
     def __str__(self):
         return '\u2654' if self.color == 'white' else '\u265A'
-    
-    def valid_moves(self, board, start_pos, end_pos):
-        """
-        Determines if moving the king from start_pos to end_pos is valid.
 
-        Parameters:
-        - board: The current state of the chessboard.
-        - start_pos: Starting position string (e.g., 'e1').
-        - end_pos: Ending position string (e.g., 'e2').
-
-        Returns:
-        - True if the move is valid, False otherwise.
-        """
+    def valid_moves(self, board, start_pos, end_pos, last_move):
         # Convert positions to indices
         try:
             start_row, start_col = position_to_indices(start_pos)
@@ -51,19 +42,73 @@ class King(Piece):
         except ValueError as e:
             print(e)
             return False
-        
-        # Calculate movement differences
-        col_diff = abs(end_col - start_col)
-        row_diff = abs(end_row - start_row)
 
-        if max(col_diff, row_diff) == 1:
-            # King moves one square in any direction
+        # Calculate movement differences
+        col_diff = end_col - start_col
+        row_diff = end_row - start_row
+
+        if max(abs(col_diff), abs(row_diff)) == 1:
+            # Normal king move (one square in any direction)
             target_piece = board[end_row][end_col]
             if target_piece is None or target_piece.color != self.color:
-                return True
-        # Castling logic can be added here if desired
-        return False
+                # Ensure the king doesn't move into check
+                if not self.causes_self_check(board, start_pos, end_pos, last_move):
+                    return True
+            return False
+        elif row_diff == 0 and abs(col_diff) == 2:
+            # Attempting to castle
+            return self.can_castle(board, start_pos, end_pos, last_move)
+        else:
+            return False
 
+    def can_castle(self, board, start_pos, end_pos, last_move):
+        if self.has_moved:
+            return False
+
+        start_row, start_col = position_to_indices(start_pos)
+        end_row, end_col = position_to_indices(end_pos)
+
+        if start_row != end_row:
+            return False  # King must stay on the same rank
+
+        # Determine if kingside or queenside castling
+        if end_col == start_col + 2:
+            # Kingside castling
+            rook_col = 7
+        elif end_col == start_col - 2:
+            # Queenside castling
+            rook_col = 0
+        else:
+            return False
+
+        rook = board[start_row][rook_col]
+        if not isinstance(rook, Rook) or rook.color != self.color or rook.has_moved:
+            return False
+
+        # Check if squares between king and rook are empty
+        step = 1 if rook_col > start_col else -1
+        for col in range(start_col + step, rook_col, step):
+            if board[start_row][col] is not None:
+                return False
+
+        # Check if the king is in check, or would pass through or end up in check
+        # Squares the king passes through: start_col, start_col + step, end_col
+        for col in [start_col, start_col + step, end_col]:
+            pos = indices_to_position(col, start_row)
+            if is_square_attacked(board, pos, self.color, last_move):
+                return False
+
+        return True
+
+    def causes_self_check(self, board, start_pos, end_pos, last_move):
+        # Simulate the move and check if the king is in check
+        temp_board = [row[:] for row in board]
+        start_row, start_col = position_to_indices(start_pos)
+        end_row, end_col = position_to_indices(end_pos)
+        piece = temp_board[start_row][start_col]
+        temp_board[end_row][end_col] = piece
+        temp_board[start_row][start_col] = None
+        return is_in_check(temp_board, self.color, last_move)
     
 class Queen(Piece):
     def __init__(self, color, position):
@@ -72,7 +117,7 @@ class Queen(Piece):
     def __str__(self):
         return '\u2655' if self.color == 'white' else '\u265B'
     
-    def valid_moves(self, board, start_pos, end_pos):
+    def valid_moves(self, board, start_pos, end_pos, last_move=None):
         """
         Determines if moving the queen from start_pos to end_pos is valid.
 
@@ -149,7 +194,7 @@ class Rook(Piece):
     def __str__(self):
         return '\u2656' if self.color == 'white' else '\u265C'
     
-    def valid_moves(self, board, start_pos, end_pos):
+    def valid_moves(self, board, start_pos, end_pos, last_move=None):
         """
         Determines if moving the rook from start_pos to end_pos is valid.
 
@@ -208,7 +253,7 @@ class Bishop(Piece):
     def __str__(self):
         return '\u2657' if self.color == 'white' else '\u265D'
     
-    def valid_moves(self, board, start_pos, end_pos):
+    def valid_moves(self, board, start_pos, end_pos, last_move=None):
         """
         Determines if moving the bishop from start_pos to end_pos is valid.
 
@@ -262,7 +307,7 @@ class Knight(Piece):
     def __str__(self):
         return '\u2658' if self.color == 'white' else '\u265E'
     
-    def valid_moves(self, board, start_pos, end_pos):
+    def valid_moves(self, board, start_pos, end_pos, last_move=None):
         """
         Determines if moving the knight from start_pos to end_pos is valid.
 
