@@ -1,8 +1,9 @@
+from tensorflow.keras.models import load_model
 from utils import get_piece_info
 from game_logic import move_piece
 from board import initialize_board, print_board, board_to_fen
 from game_logic import check_game_status
-from algorithm import minimax
+from deep_algo import minimax
 from encoder_decoder import decode_move, encode_move
 from generate_pgn import generate_pgn, save_pgn
 
@@ -18,6 +19,10 @@ def main():
     user_moves = []
     ai_moves = []
 
+    model_path = "C:/Users/User/Desktop/AI/Projects/Smart-Chess/model_training/models/chess_evaluation_model.h5"
+
+    # Load the model
+    model = load_model(model_path)
 
     board = initialize_board()
     print_board(board)
@@ -71,7 +76,7 @@ def main():
             # AI's turn
             print("AI is thinking...")
             evaluation, ai_move = minimax(board, depth=3, alpha=float('-inf'), beta=float('inf'),
-                                          maximizing_player=True, current_color=ai_color, last_move=ai_last_move)
+                                          maximizing_player=True, current_color=ai_color, last_move=ai_last_move, model=model)
             if ai_move:
                 encode_ai = encode_move(ai_move, board, player='black')
                 # print(encode_ai)
@@ -101,6 +106,9 @@ def main():
     print("\nGame in Portable Game Notation (PGN):")
     print(pgn)
     save_pgn(pgn)
+
+    # Release the model
+    del model
 
 if __name__ == "__main__":
     main()
