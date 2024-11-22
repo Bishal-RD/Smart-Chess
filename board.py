@@ -47,12 +47,12 @@ def initialize_board():
         Pawn('white', 'g7'),
         Pawn('white', 'h7'),
         Rook('white', 'a8'),
-        Knight('white', 'b8'),
-        Bishop('white', 'c8'),
-        Queen('white', 'd8'),
+        # Knight('white', 'b8'),
+        # Bishop('white', 'c8'),
+        # Queen('white', 'd8'),
         King('white', 'e8'),
-        Bishop('white', 'f8'),
-        Knight('white', 'g8'),
+        # Bishop('white', 'f8'),
+        # Knight('white', 'g8'),
         Rook('white', 'h8'),
     ]
 

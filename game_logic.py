@@ -1,55 +1,7 @@
 import copy
-from pieces import Pawn, King, Queen
+from checked import is_in_check
+from pieces import Pawn, King, Queen, Rook
 from utils import get_piece_info, position_to_indices, indices_to_position
-
-def is_in_check(board, color, last_move):
-    """
-    Determines if the king of the given color is in check.
-
-    Parameters:
-    - board: The current state of the chessboard.
-    - color: 'white' or 'black'.
-    - last_move: A tuple (last_start_pos, last_end_pos) representing the opponent's last move.
-
-    Returns:
-    - True if the king is in check, False otherwise.
-    """
-    # Find the king's position
-
-    king_position = None
-    for row in range(8):
-        for col in range(8):
-            piece = board[row][col]
-            if piece and isinstance(piece, King) and piece.color == color:
-                king_position = indices_to_position(col, row)
-                break
-        if king_position:
-            break
-
-    if not king_position:
-        # The king is not on the board (should not happen in a normal game)
-        return True
-
-    # Get opponent's color
-    opponent_color = 'black' if color == 'white' else 'white'
-
-    # Check if any opponent piece can move to the king's position
-    for row in range(8):
-        for col in range(8):
-            piece = board[row][col]
-            if piece and piece.color == opponent_color:
-                start_pos = indices_to_position(col, row)
-                if isinstance(piece, Pawn):
-                    is_valid = piece.valid_moves(board, start_pos, king_position, last_move)
-                else:
-                    is_valid = piece.valid_moves(board, start_pos, king_position)
-                if is_valid:
-                    return True  # King is in check
-
-    return False  # King is not in check
-
-
-import copy
 
 def get_all_legal_moves(board, color, last_move):
     """
@@ -75,10 +27,8 @@ def get_all_legal_moves(board, color, last_move):
                     for end_col in range(8):
                         end_pos = indices_to_position(end_col, end_row)  # Ensure correct order
                         # Check if the move is valid
-                        if isinstance(piece, Pawn):
-                            is_valid = piece.valid_moves(board, start_pos, end_pos, last_move)
-                        else:
-                            is_valid = piece.valid_moves(board, start_pos, end_pos)
+                        is_valid = piece.valid_moves(board, start_pos, end_pos, last_move)
+                        
                         if is_valid:
                             # Make a deep copy of the board to test the move
                             board_copy = copy.deepcopy(board)
@@ -156,16 +106,28 @@ def move_piece(board, start_pos, end_pos, last_move):
     piece = board[start_row][start_col]
 
     # Check if the move is valid according to the piece's valid_moves function
-    if isinstance(piece, Pawn):
-        is_valid = piece.valid_moves(board, start_pos, end_pos, last_move)
-    else:
-        is_valid = piece.valid_moves(board, start_pos, end_pos)
+    is_valid = piece.valid_moves(board, start_pos, end_pos, last_move)
 
     # Check if the move is valid according to the piece's valid_moves function
     if is_valid:
         # Move is valid, perform the move
         end_row, end_col = position_to_indices(end_pos)
         target_piece = board[end_row][end_col]
+
+        # Handle castling for King
+        if isinstance(piece, King) and abs(end_col - start_col) == 2:
+            # Castling move
+            rook_start_col = 7 if end_col > start_col else 0
+            rook_end_col = start_col + (1 if end_col > start_col else -1)
+            rook = board[start_row][rook_start_col]
+            if rook is None or not isinstance(rook, Rook):
+                print("Castling error: Rook not found")
+                return False
+            # Move the rook
+            board[start_row][rook_end_col] = rook
+            board[start_row][rook_start_col] = None
+            rook.set_position(indices_to_position(rook_end_col, start_row))
+            rook.has_moved = True
 
         # Handle en passant capture for pawn
         if isinstance(piece, Pawn):
