@@ -94,7 +94,7 @@ class King(Piece):
         # Check if the king is in check, or would pass through or end up in check
         # Squares the king passes through: start_col, start_col + step, end_col
         for col in [start_col, start_col + step, end_col]:
-            pos = indices_to_position(col, start_row)
+            pos = indices_to_position(start_row, col)
             if is_square_attacked(board, pos, self.color, last_move):
                 return False
 

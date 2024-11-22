@@ -3,6 +3,8 @@ from game_logic import move_piece
 from board import initialize_board, print_board, board_to_fen
 from game_logic import check_game_status
 from algorithm import minimax
+from encoder_decoder import decode_move, encode_move
+from generate_pgn import generate_pgn, save_pgn
 
 def main():
     print("Welcome to the Chess Game!")
@@ -11,13 +13,18 @@ def main():
     ai_color = 'black'     # AI plays black
     turn = 'white'         # White starts first
     last_move = None  # Keep track of the last move
+    ai_last_move = None  # Keep track of the last move for the AI
 
-    board = initialize_board("white")
+    user_moves = []
+    ai_moves = []
+
+
+    board = initialize_board()
     print_board(board)
 
     while True:
         fen = board_to_fen(board)
-        print("FEN:", fen)
+        # print("FEN:", fen)
 
         print(f"\n{turn.capitalize()}'s turn")
         # Check if the game is over before the player's move
@@ -27,10 +34,18 @@ def main():
             break
 
         if turn == human_color:
-            move_input = input("Enter your move (e.g., e2 e4) or 'q' to quit: ").strip()
+            move_input = input("Enter your move (e.g., e4) or 'q' to quit: ")
+
+            # Check if the user wants to quit
             if move_input.lower() == 'q':
+                result = "*"
                 print("Thank you for playing!")
                 break
+
+            user_moves.append(move_input)
+            move_input = decode_move(move_input, board, player='white', last_move=last_move)
+            # print(move_input)
+
             try:
                 start_pos, end_pos = move_input.split()
                 # Get the piece at the starting position
@@ -56,11 +71,17 @@ def main():
             # AI's turn
             print("AI is thinking...")
             evaluation, ai_move = minimax(board, depth=3, alpha=float('-inf'), beta=float('inf'),
-                                          maximizing_player=True, current_color=ai_color, last_move=last_move)
+                                          maximizing_player=True, current_color=ai_color, last_move=ai_last_move)
             if ai_move:
+                encode_ai = encode_move(ai_move, board, player='black')
+                # print(encode_ai)
+                ai_moves.append(encode_ai)
+                
+                # Execute the AI's move
                 start_pos, end_pos = ai_move
-                move_piece(board, start_pos, end_pos, last_move)
-                print(f"AI moved from {start_pos} to {end_pos}")
+                move_piece(board, start_pos, end_pos, ai_last_move)
+                # Update the last move
+                ai_last_move = (start_pos, end_pos)
                 print_board(board)
                 # Switch turns
                 turn = human_color
@@ -69,12 +90,17 @@ def main():
                 break
 
     # After game over, display the result
-    if result == 'white_win':
+    if result == '1-0':
         print("White wins the game!")
-    elif result == 'black_win':
+    elif result == '0-1':
         print("Black wins the game!")
-    elif result == 'draw':
+    elif result == '1/2-1/2':
         print("The game ended in a draw.")
+
+    pgn = generate_pgn(user_moves, ai_moves, result)
+    print("\nGame in Portable Game Notation (PGN):")
+    print(pgn)
+    save_pgn(pgn)
 
 if __name__ == "__main__":
     main()

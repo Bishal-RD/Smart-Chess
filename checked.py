@@ -21,7 +21,7 @@ def is_square_attacked(board, pos, color, last_move):
         for col in range(8):
             piece = board[row][col]
             if piece and piece.color == opponent_color:
-                start_pos = indices_to_position(col, row)
+                start_pos = indices_to_position(row, col)
                 if isinstance(piece, Pawn):
                     is_valid = piece.valid_moves(board, start_pos, pos, last_move)
                 else:
@@ -51,7 +51,7 @@ def is_in_check(board, color, last_move):
         for col in range(8):
             piece = board[row][col]
             if piece and isinstance(piece, King) and piece.color == color:
-                king_position = indices_to_position(col, row)
+                king_position = indices_to_position(row, col)
                 break
         if king_position:
             break

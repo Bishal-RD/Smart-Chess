@@ -21,11 +21,11 @@ def get_all_legal_moves(board, color, last_move):
         for col in range(8):
             piece = board[row][col]
             if piece and piece.color == color:
-                start_pos = indices_to_position(col, row)  # Ensure correct order
+                start_pos = indices_to_position(row, col)  # Ensure correct order
                 # Generate all possible end positions for the piece
                 for end_row in range(8):
                     for end_col in range(8):
-                        end_pos = indices_to_position(end_col, end_row)  # Ensure correct order
+                        end_pos = indices_to_position(end_row, end_col)  # Ensure correct order
                         # Check if the move is valid
                         is_valid = piece.valid_moves(board, start_pos, end_pos, last_move)
                         
@@ -66,9 +66,8 @@ def check_game_status(board, color, last_move):
         legal_moves = get_all_legal_moves(board, color, last_move)
         if not legal_moves:
             # Player is in checkmate
-            winner = 'black' if color == 'white' else 'white'
-            # print(f"Checkmate! {winner.capitalize()} wins.")
-            return True, f"{winner}_win"
+            winner = '0-1' if color == 'white' else '1-0'
+            return True, winner
     else:
         # Player is not in check but may have no legal moves (stalemate)
         legal_moves = get_all_legal_moves(board, color, last_move)
@@ -76,7 +75,7 @@ def check_game_status(board, color, last_move):
         if not legal_moves:
             # Stalemate
             print("Stalemate! The game is a draw.")
-            return True, 'draw'
+            return True, '1/2-1/2'
 
     # Game is not over
     return False, None
@@ -126,7 +125,7 @@ def move_piece(board, start_pos, end_pos, last_move):
             # Move the rook
             board[start_row][rook_end_col] = rook
             board[start_row][rook_start_col] = None
-            rook.set_position(indices_to_position(rook_end_col, start_row))
+            rook.set_position(indices_to_position(start_row, rook_end_col))
             rook.has_moved = True
 
         # Handle en passant capture for pawn
@@ -140,7 +139,7 @@ def move_piece(board, start_pos, end_pos, last_move):
                 if isinstance(captured_pawn, Pawn) and captured_pawn.color != piece.color:
                     # Remove the captured pawn
                     board[captured_row][captured_col] = None
-                    print(f"{piece.color.capitalize()} Pawn captures en passant at {indices_to_position(captured_col, captured_row)}")
+                    print(f"{piece.color.capitalize()} Pawn captures en passant at {indices_to_position(captured_row, captured_col)}")
 
         # Capture logic (if there's an opponent's piece at the destination)
         if target_piece and target_piece.color != piece.color:
