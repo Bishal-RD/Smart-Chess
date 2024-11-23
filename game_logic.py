@@ -156,7 +156,7 @@ def move_piece(board, start_pos, end_pos, last_move):
         # Handle pawn promotion
         if isinstance(piece, Pawn):
 
-            promotion_row = 0 if piece.color == 'white' else 7
+            promotion_row = 7 if piece.color == 'white' else 0
             if end_row == promotion_row:
                 # Pawn reaches the last rank, promotion occurs
                 player_is_human = True if piece.color == 'white' else False

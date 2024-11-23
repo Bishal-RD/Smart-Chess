@@ -1,4 +1,3 @@
-from tensorflow.keras.models import load_model
 from utils import get_piece_info
 from game_logic import move_piece
 from board import initialize_board, print_board, board_to_fen
@@ -6,6 +5,12 @@ from game_logic import check_game_status
 from deep_algo import minimax
 from encoder_decoder import decode_move, encode_move
 from generate_pgn import generate_pgn, save_pgn
+from model import ChessEvaluationModel
+import torch
+import logging
+import os
+# Suppress TensorFlow and other library logs
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 def main():
     print("Welcome to the Chess Game!")
@@ -19,10 +24,14 @@ def main():
     user_moves = []
     ai_moves = []
 
-    model_path = "C:/Users/User/Desktop/AI/Projects/Smart-Chess/model_training/models/chess_evaluation_model.h5"
+    model_path = "C:/Users/User/Desktop/AI/Projects/Smart-Chess/models/chess_evaluation_model.pth"
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    print(device)
 
-    # Load the model
-    model = load_model(model_path)
+    model = ChessEvaluationModel().to(device)
+    # Load the model weights
+    state_dict = torch.load(model_path, map_location=device, weights_only=True)  # Explicitly set weights_only=True
+    model.load_state_dict(state_dict)
 
     board = initialize_board()
     print_board(board)

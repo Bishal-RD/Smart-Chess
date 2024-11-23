@@ -1,7 +1,7 @@
-import numpy as np
+import torch
 import copy
 import random
-from pieces import Pawn
+import numpy as np
 from evaluate import get_move_weight
 from utils import position_to_indices
 from board import board_to_fen
@@ -26,20 +26,34 @@ def fen_to_input(fen):
                 col_idx += 1
     return board_array
 
-def evaluate_board(board, model):
+def evaluate_board(board, model, device="cuda"):
     """
-    Evaluates the board position using the trained neural network.
+    Evaluates the board position using the trained PyTorch neural network model.
     Args:
         board (chess.Board): Current board state.
+        model (torch.nn.Module): Trained PyTorch model for evaluation.
+        device (str): Device to run the model on ("cpu" or "cuda").
     Returns:
         float: Evaluation score (win probability).
     """
+    # Convert the board to FEN format
+    fen = board_to_fen(board)
 
-    fen = board_to_fen(board)  # Get the FEN string of the board
+    # Convert FEN to input format (8x8x12 array)
+    input_data = fen_to_input(fen)  # Assume fen_to_input is already defined
 
-    input_data = np.expand_dims(fen_to_input(fen), axis=0)  # Convert to model input format
-    score = model.predict(input_data)[0][0]  # Predict win probability
+    # Add batch dimension and permute to PyTorch format (N, C, H, W)
+    input_tensor = torch.tensor(input_data, dtype=torch.float32).unsqueeze(0).permute(0, 3, 1, 2).to(device)
+
+    # Set the model to evaluation mode
+    model.eval()
+
+    with torch.no_grad():  # Disable gradient computation
+        # Run the model on the input tensor
+        score = model(input_tensor).item()  # Get the score as a Python float
+
     return score
+
 
 def minimax(board, depth, alpha, beta, maximizing_player, current_color, last_move, model):
     """
@@ -87,7 +101,7 @@ def minimax(board, depth, alpha, beta, maximizing_player, current_color, last_mo
             move_piece_simulation(new_board, piece, start_pos, end_pos, last_move)
             new_last_move = (start_pos, end_pos)
             # Recursive call, switch player and color
-            evaluation, _ = minimax(new_board, depth - 1, alpha, beta, False, 'white', new_last_move)
+            evaluation, _ = minimax(new_board, depth - 1, alpha, beta, False, 'white', new_last_move, model)
             if evaluation > max_eval:
                 max_eval = evaluation
                 best_moves = [(move, move_weight)]
@@ -97,9 +111,8 @@ def minimax(board, depth, alpha, beta, maximizing_player, current_color, last_mo
             if beta <= alpha:
                 break  # Beta cutoff
         if best_moves:
-            # Use probabilities to choose the move based on weights
-            moves, weights = zip(*best_moves)
-            selected_move = random.choices(moves, weights=weights, k=1)[0]
+            # Select the move with the maximum score
+            selected_move = max(best_moves, key=lambda x: x[1])[0]  # x[1] is the score
             return max_eval, selected_move
         else:
             return max_eval, None
@@ -115,7 +128,7 @@ def minimax(board, depth, alpha, beta, maximizing_player, current_color, last_mo
             piece = new_board[start_row][start_col]
             move_piece_simulation(new_board, piece, start_pos, end_pos, last_move)
             new_last_move = (start_pos, end_pos)
-            evaluation, _ = minimax(new_board, depth - 1, alpha, beta, True, 'black', new_last_move)
+            evaluation, _ = minimax(new_board, depth - 1, alpha, beta, True, 'black', new_last_move, model)
             if evaluation < min_eval:
                 min_eval = evaluation
                 best_moves = [(move, move_weight)]
@@ -125,8 +138,8 @@ def minimax(board, depth, alpha, beta, maximizing_player, current_color, last_mo
             if beta <= alpha:
                 break  # Alpha cutoff
         if best_moves:
-            moves, weights = zip(*best_moves)
-            selected_move = random.choices(moves, weights=weights, k=1)[0]
+            # Select the move with the maximum score
+            selected_move = max(best_moves, key=lambda x: x[1])[0]  # x[1] is the score
             return min_eval, selected_move
         else:
             return min_eval, None
