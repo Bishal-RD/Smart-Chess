@@ -49,7 +49,7 @@ def evaluate_board(board, color, last_move):
 
     return total_value
 
-def minimax(board, depth, alpha, beta, maximizing_player, current_color, last_move):
+def minimax(board, depth, alpha, beta, maximizing_player, current_color, last_move, model=None):
     """
     Minimax algorithm with alpha-beta pruning.
 

@@ -2,8 +2,10 @@ import numpy as np  # NumPy for array computations
 import chess.pgn
 from tqdm import tqdm  # For progress bar
 import pickle
+from sklearn.model_selection import train_test_split
 
-def extract_positions_and_labels(pgn_file, max_games=50000):
+
+def extract_positions_and_labels(pgn_file, max_games=10000):
     """
     Extract positions and labels from a PGN file.
     Each move alternates between Player 1 and Player 2, and is labeled accordingly.
@@ -84,7 +86,7 @@ def fen_to_input(fen):
 
 if __name__ == "__main__":
     # File paths for .pkl files
-    dataset_file = "C:/Users/User/Desktop/AI/Projects/Smart-Chess/model_training/Datasets/split_data_50k.pkl"
+    dataset_file = "C:/Users/User/Desktop/AI/Projects/Smart-Chess/model_training/Datasets/split_data_10k.pkl"
 
     try:
         # Check if the dataset has already been processed and saved
@@ -101,14 +103,23 @@ if __name__ == "__main__":
         with open(pgn_path) as pgn_file:
             positions, labels = extract_positions_and_labels(pgn_file)
 
-        # Save positions and labels to a .pkl file
-        print("Saving processed dataset...")
-        with open(dataset_file, "wb") as file:
-            pickle.dump({"positions": positions, "labels": labels}, file)
-        print("Dataset saved successfully!")
+        # Convert all positions with NumPy
+        print("Converting positions to numerical representation...")
+        inputs = np.array([fen_to_input(fen) for fen in tqdm(positions, desc="Processing positions")], dtype=np.float32)
+        labels = np.array(labels, dtype=np.float32)
 
-    # Example to check the output
-    for position, label in zip(positions[:5], labels[:5]):
-        print(f"Label: {label}")
-        print(position)
-        print("-" * 50)
+        # Split data into training and testing sets
+        print("Splitting dataset...")
+        X_train, X_test, y_train, y_test = train_test_split(inputs, labels, test_size=0.2, random_state=42)
+
+        # Save the split data to a .pkl file
+        print("Saving preprocessed dataset...")
+        with open(dataset_file, "wb") as file:
+            pickle.dump({
+                "X_train": X_train,
+                "X_test": X_test,
+                "y_train": y_train,
+                "y_test": y_test
+            }, file)
+
+        print("Datasets saved successfully as .pkl file!")

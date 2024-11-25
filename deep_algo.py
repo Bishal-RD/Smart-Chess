@@ -87,11 +87,11 @@ def minimax(board, depth, alpha, beta, maximizing_player, current_color, last_mo
 
     if maximizing_player:
         max_eval = float('-inf')
-        best_move = []
+        best_move = None
         for move in legal_moves:
             start_pos, end_pos = move
-            # Get the move weight before simulating the move
-            move_weight = get_move_weight(board, move)
+            # # Get the move weight before simulating the move
+            # move_weight = get_move_weight(board, move)
             # Make a deep copy of the board to simulate the move
             new_board = copy.deepcopy(board)
             # Get the piece from the new board
@@ -104,25 +104,20 @@ def minimax(board, depth, alpha, beta, maximizing_player, current_color, last_mo
             evaluation, _ = minimax(new_board, depth - 1, alpha, beta, False, 'white', new_last_move, model)
             if evaluation > max_eval:
                 max_eval = evaluation
-                best_moves = [(move, move_weight)]
-            elif evaluation == max_eval:
-                best_moves.append((move, move_weight))
+                best_move = move
             alpha = max(alpha, evaluation)
             if beta <= alpha:
                 break  # Beta cutoff
-        if best_moves:
-            # Select the move with the maximum score
-            selected_move = max(best_moves, key=lambda x: x[1])[0]  # x[1] is the score
-            return max_eval, selected_move
+            return max_eval, best_move
         else:
             return max_eval, None
     else:
         min_eval = float('inf')
-        best_move = []
+        best_move = None
         for move in legal_moves:
             start_pos, end_pos = move
-            # Get the move weight before simulating the move
-            move_weight = get_move_weight(board, move)
+            # # Get the move weight before simulating the move
+            # move_weight = get_move_weight(board, move)
             new_board = copy.deepcopy(board)
             start_row, start_col = position_to_indices(start_pos)
             piece = new_board[start_row][start_col]
@@ -131,16 +126,11 @@ def minimax(board, depth, alpha, beta, maximizing_player, current_color, last_mo
             evaluation, _ = minimax(new_board, depth - 1, alpha, beta, True, 'black', new_last_move, model)
             if evaluation < min_eval:
                 min_eval = evaluation
-                best_moves = [(move, move_weight)]
-            elif evaluation == min_eval:
-                best_moves.append((move, move_weight))
+                best_move = move
             beta = min(beta, evaluation)
             if beta <= alpha:
                 break  # Alpha cutoff
-        if best_moves:
-            # Select the move with the maximum score
-            selected_move = max(best_moves, key=lambda x: x[1])[0]  # x[1] is the score
-            return min_eval, selected_move
+            return min_eval, best_move
         else:
             return min_eval, None
         

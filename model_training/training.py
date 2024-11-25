@@ -18,7 +18,7 @@ class ChessEvaluationModel(nn.Module):
         self.relu = nn.ReLU()
         self.pool = nn.MaxPool2d(2, 2)  # Down-sample by 2x
         self.flatten = nn.Flatten()
-        self.fc1 = nn.Linear(64 * 4 * 4, 128)  # Adjust input size based on pooling
+        self.fc1 = nn.Linear(64 * 4 * 4, 128) # Adjust input size based on pooling
         self.fc2 = nn.Linear(128, 1)
         self.sigmoid = nn.Sigmoid()
 
@@ -31,6 +31,7 @@ class ChessEvaluationModel(nn.Module):
         return x
 
 if __name__ == "__main__":
+    batch_size = 512  # Starting batch size
     # Load preprocessed dataset
     dataset_file = "C:/Users/User/Desktop/AI/Projects/Smart-Chess/model_training/Datasets/split_data_10k.pkl"
     try:
@@ -49,16 +50,19 @@ if __name__ == "__main__":
     train_dataset = TensorDataset(X_train, y_train)
     test_dataset = TensorDataset(X_test, y_test)
 
-    train_loader = DataLoader(train_dataset, batch_size=64, shuffle=True)
-    test_loader = DataLoader(test_dataset, batch_size=64, shuffle=False)
+    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+    test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
 
     # Define the model
     model = ChessEvaluationModel().to(device)
     criterion = nn.BCELoss()  # Binary Cross-Entropy Loss
-    optimizer = optim.Adam(model.parameters(), lr=0.001)
+    optimizer = optim.Adam(model.parameters(), lr=0.01)
+
+    # Define a learning rate scheduler
+    scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.9)  # Halve LR every 3 epochs
 
     # Train the model
-    num_epochs = 100
+    num_epochs = 1000
     print("Starting training...")
     for epoch in range(num_epochs):
         model.train()
@@ -72,9 +76,12 @@ if __name__ == "__main__":
                 optimizer.step()
                 epoch_loss += loss.item()
                 t.set_postfix(loss=loss.item())
+        
+        # Update the learning rate
+        scheduler.step()
         print(f"Epoch {epoch + 1} Loss: {epoch_loss / len(train_loader):.4f}")
-        if(epoch % 10 == 0):
-            torch.save(model.state_dict(), f"C:/Users/User/Desktop/AI/Projects/Smart-Chess/models/model_{epoch}.pth")
+        if epoch > 0 and epoch % 10 == 0:
+            torch.save(model.state_dict(), f"C:/Users/User/Desktop/AI/Projects/Smart-Chess/models/new_model_{epoch}.pth")
 
     # Evaluate the model
     model.eval()
@@ -83,7 +90,7 @@ if __name__ == "__main__":
     with torch.no_grad():
         for X_batch, y_batch in test_loader:
             outputs = model(X_batch)
-            predicted = (outputs > 0.5).float()  # Binary classification threshold
+            predicted = (outputs > 0.5).float() # Binary classification threshold
             correct += (predicted == y_batch).sum().item()
             total += y_batch.size(0)
 

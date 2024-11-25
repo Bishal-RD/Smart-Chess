@@ -2,15 +2,12 @@ from utils import get_piece_info
 from game_logic import move_piece
 from board import initialize_board, print_board, board_to_fen
 from game_logic import check_game_status
-from deep_algo import minimax
+# from deep_algo import minimax
+from algorithm import minimax
 from encoder_decoder import decode_move, encode_move
 from generate_pgn import generate_pgn, save_pgn
 from model import ChessEvaluationModel
 import torch
-import logging
-import os
-# Suppress TensorFlow and other library logs
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 def main():
     print("Welcome to the Chess Game!")
@@ -24,7 +21,7 @@ def main():
     user_moves = []
     ai_moves = []
 
-    model_path = "C:/Users/User/Desktop/AI/Projects/Smart-Chess/models/chess_evaluation_model.pth"
+    model_path = "C:/Users/User/Desktop/AI/Projects/Smart-Chess/models/new_model_670.pth"
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(device)
 
@@ -84,7 +81,7 @@ def main():
         else:
             # AI's turn
             print("AI is thinking...")
-            evaluation, ai_move = minimax(board, depth=3, alpha=float('-inf'), beta=float('inf'),
+            evaluation, ai_move = minimax(board, depth=5, alpha=float('-inf'), beta=float('inf'),
                                           maximizing_player=True, current_color=ai_color, last_move=ai_last_move, model=model)
             if ai_move:
                 encode_ai = encode_move(ai_move, board, player='black')
