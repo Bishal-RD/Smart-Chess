@@ -397,26 +397,30 @@ class Pawn(Piece):
             # Diagonal capture
             target_piece = board[end_row][end_col]
             if target_piece and target_piece.color != self.color:
-                return True
-            else:
-                # En passant capture
-                # Check if the last move was an opponent's pawn moving two squares forward
-                if last_move:
-                    last_start_pos, last_end_pos = last_move
-                    last_start_row, last_start_col = position_to_indices(last_start_pos)
-                    last_end_row, last_end_col = position_to_indices(last_end_pos)
-                    last_moved_piece = board[last_end_row][last_end_col]
-                    if isinstance(last_moved_piece, Pawn) and last_moved_piece.color != self.color:
-                        # Check if the pawn moved two squares forward
-                        if abs(last_end_row - last_start_row) == 2:
-                            # Check if the pawn is adjacent to our pawn
-                            if last_end_row == start_row and last_end_col == end_col:
-                                # En passant capture is possible
-                                return True
+                return True  # Normal diagonal capture
+
+            # En passant capture
+            if last_move:
+                last_start_pos, last_end_pos = last_move
+                last_start_row, last_start_col = position_to_indices(last_start_pos)
+                last_end_row, last_end_col = position_to_indices(last_end_pos)
+
+                # Ensure the last moved piece is a pawn of the opponent
+                last_moved_piece = board[last_end_row][last_end_col]
+                if (
+                    isinstance(last_moved_piece, Pawn) and
+                    last_moved_piece.color != self.color and
+                    abs(last_end_row - last_start_row) == 2 and  # Moved two squares forward
+                    last_end_row == start_row and  # Same row as capturing pawn
+                    last_end_col == end_col  # Capturing on the correct column
+                ):
+                    return True  # En passant capture is valid
+
+            return False  # No valid diagonal or en passant capture
 
         # If none of the valid moves apply
         return False
-    
+
     def promote_pawn(self, color, end_pos, promotion_choice='Q'):
         """
         Promotes a pawn to a new piece based on the provided choice.

@@ -3,11 +3,10 @@ from game_logic import move_piece
 from board import initialize_board, print_board, board_to_fen
 from game_logic import check_game_status
 # from deep_algo import minimax
-from algorithm import minimax
+from monte_carlo_algo import mcts
+from algorithm import minimax, iterative_deepening
 from encoder_decoder import decode_move, encode_move
 from generate_pgn import generate_pgn, save_pgn
-from model import ChessEvaluationModel
-import torch
 
 def main():
     print("Welcome to the Chess Game!")
@@ -20,15 +19,6 @@ def main():
 
     user_moves = []
     ai_moves = []
-
-    model_path = "C:/Users/User/Desktop/AI/Projects/Smart-Chess/models/new_model_670.pth"
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    print(device)
-
-    model = ChessEvaluationModel().to(device)
-    # Load the model weights
-    state_dict = torch.load(model_path, map_location=device, weights_only=True)  # Explicitly set weights_only=True
-    model.load_state_dict(state_dict)
 
     board = initialize_board()
     print_board(board)
@@ -81,8 +71,10 @@ def main():
         else:
             # AI's turn
             print("AI is thinking...")
-            evaluation, ai_move = minimax(board, depth=5, alpha=float('-inf'), beta=float('inf'),
-                                          maximizing_player=True, current_color=ai_color, last_move=ai_last_move, model=model)
+            # evaluation, ai_move = minimax(board, depth=1, alpha=float('-inf'), beta=float('inf'),
+            #                               maximizing_player=True, current_color=ai_color, last_move=ai_last_move)
+            # ai_move = iterative_deepening(board, ai_color, ai_last_move, max_depth=2, time_limit=120)
+            ai_move = mcts(board, root_color=ai_color , root_last_move=ai_last_move, simulations=1000, time_limit=60)
             if ai_move:
                 encode_ai = encode_move(ai_move, board, player='black')
                 # print(encode_ai)
@@ -112,9 +104,6 @@ def main():
     print("\nGame in Portable Game Notation (PGN):")
     print(pgn)
     save_pgn(pgn)
-
-    # Release the model
-    del model
 
 if __name__ == "__main__":
     main()

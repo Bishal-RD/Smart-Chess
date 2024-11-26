@@ -207,27 +207,25 @@ def move_piece_simulation(board, piece, start_pos, end_pos, last_move):
     start_row, start_col = position_to_indices(start_pos)
     end_row, end_col = position_to_indices(end_pos)
 
-    # Handle en passant capture
-    if isinstance(piece, Pawn):
-        if abs(end_col - start_col) == 1 and board[end_row][end_col] is None:
-            # En passant capture
-            captured_row = start_row
-            captured_col = end_col
-            board[captured_row][captured_col] = None
+    
+    is_valid = piece.valid_moves(board, start_pos, end_pos, last_move)
 
-    # Move the piece
-    board[end_row][end_col] = piece
-    board[start_row][start_col] = None
-    piece.position = end_pos
+    if is_valid:
+        # Handle pawn promotion
+        if isinstance(piece, Pawn):
+            promotion_row = 0 if piece.color == 'white' else 7
+            if end_row == promotion_row:
+                # Promote to Queen by default in simulation
+                promoted_piece = piece.promote_pawn(piece.color, end_pos)
+                board[end_row][end_col] = promoted_piece
+            else:
+                # Pawn did not promote, update has_moved
+                piece.has_moved = True
 
-    # Handle pawn promotion
-    if isinstance(piece, Pawn):
-        promotion_row = 0 if piece.color == 'white' else 7
-        if end_row == promotion_row:
-            # Promote to Queen by default in simulation
-            promoted_piece = Queen(piece.color, end_pos)
-            board[end_row][end_col] = promoted_piece
-        else:
-            piece.has_moved = True
+        # Move the piece
+        board[end_row][end_col] = piece
+        board[start_row][start_col] = None
+        piece.position = end_pos
+
     elif hasattr(piece, 'has_moved'):
         piece.has_moved = True
