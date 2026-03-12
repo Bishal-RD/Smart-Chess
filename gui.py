@@ -1,6 +1,7 @@
 import pygame
 import sys
 import os
+import time
 import threading
 
 from board import initialize_board
@@ -31,6 +32,11 @@ MUTED = (150, 150, 150)
 ACCENT = (129, 182, 76)
 BTN = (70, 70, 70)
 BTN_HOVER = (90, 90, 90)
+TIMER_BG = (35, 35, 35)
+TIMER_ACTIVE = (60, 60, 55)
+TIMER_LOW = (120, 40, 40)
+
+TIMER_SECONDS = 600  # 10 minutes per side
 
 WHITE_PIECE = (255, 255, 255)
 BLACK_PIECE = (50, 50, 50)
@@ -53,6 +59,7 @@ class ChessGUI:
         self.title_font = pygame.font.SysFont(_fn, 24, bold=True)
         self.info_font = pygame.font.SysFont(_fn, 18)
         self.small_font = pygame.font.SysFont(_fn, 16)
+        self.timer_font = pygame.font.SysFont("ubuntumono", 22, bold=True)
 
         self._load_pieces()
         self.reset_game()
@@ -111,6 +118,9 @@ class ChessGUI:
         self.promo_move = None
         self.promo_rects = {}
         self.new_game_btn = None
+        self.white_time = TIMER_SECONDS
+        self.black_time = TIMER_SECONDS
+        self.last_tick = time.time()
 
     # --- Drawing ---
 
@@ -208,6 +218,20 @@ class ChessGUI:
         st = self.info_font.render(self.status, True, sc)
         self.screen.blit(st, (x, y))
         y += 30
+
+        pygame.draw.line(self.screen, (80, 80, 80), (x, y), (WIN_W - 18, y))
+        y += 12
+
+        # Timers
+        bl = self.small_font.render("Black", True, MUTED)
+        self.screen.blit(bl, (x, y))
+        self._draw_timer(x, y + 16, self.black_time, self.turn == 'black')
+        y += 52
+
+        wl = self.small_font.render("White", True, MUTED)
+        self.screen.blit(wl, (x, y))
+        self._draw_timer(x, y + 16, self.white_time, self.turn == 'white')
+        y += 52
 
         pygame.draw.line(self.screen, (80, 80, 80), (x, y), (WIN_W - 18, y))
         y += 12
@@ -311,6 +335,39 @@ class ChessGUI:
                 self.captured_by_black.append(entry)
             else:
                 self.captured_by_white.append(entry)
+
+    def _update_timer(self):
+        if self.game_over or self.promo_pending:
+            self.last_tick = time.time()
+            return
+        now = time.time()
+        dt = now - self.last_tick
+        self.last_tick = now
+        if self.turn == 'white':
+            self.white_time -= dt
+            if self.white_time <= 0:
+                self.white_time = 0
+                self.game_over = True
+                self.status = "Time out! AI wins!"
+        else:
+            self.black_time -= dt
+            if self.black_time <= 0:
+                self.black_time = 0
+                self.game_over = True
+                self.status = "Time out! You win!"
+
+    def _fmt_time(self, seconds):
+        s = max(0, int(seconds))
+        return f"{s // 60:02d}:{s % 60:02d}"
+
+    def _draw_timer(self, x, y, seconds, active):
+        w, h = SIDEBAR - 36, 30
+        bg = TIMER_ACTIVE if active else TIMER_BG
+        if active and seconds < 30:
+            bg = TIMER_LOW
+        pygame.draw.rect(self.screen, bg, (x, y, w, h), border_radius=4)
+        txt = self.timer_font.render(self._fmt_time(seconds), True, TEXT)
+        self.screen.blit(txt, (x + w - txt.get_width() - 8, y + (h - txt.get_height()) // 2))
 
     def _result_msg(self, result):
         if result == 'white_win':
@@ -473,6 +530,7 @@ class ChessGUI:
                         sys.exit()
 
             self._process_ai()
+            self._update_timer()
 
             self.draw_board()
             self.draw_pieces()
