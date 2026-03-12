@@ -70,16 +70,18 @@ def get_all_legal_moves(board, color, last_move):
             piece = board[row][col]
             if piece and piece.color == color:
                 start_pos = indices_to_position(col, row)  # Ensure correct order
-                # Generate all possible end positions for the piece
-                for end_row in range(8):
-                    for end_col in range(8):
-                        end_pos = indices_to_position(end_col, end_row)  # Ensure correct order
-                        # Check if the move is valid
-                        if isinstance(piece, Pawn):
-                            is_valid = piece.valid_moves(board, start_pos, end_pos, last_move)
-                        else:
-                            is_valid = piece.valid_moves(board, start_pos, end_pos)
-                        if is_valid:
+                # Generate candidate moves for this piece (replaces brute-force 64-square scan)
+                if isinstance(piece, Pawn):
+                    candidates = piece.get_candidate_moves(board, start_pos, last_move)
+                else:
+                    candidates = piece.get_candidate_moves(board, start_pos)
+                for end_pos in candidates:
+                    # Validate the move with the piece's original rules
+                    if isinstance(piece, Pawn):
+                        is_valid = piece.valid_moves(board, start_pos, end_pos, last_move)
+                    else:
+                        is_valid = piece.valid_moves(board, start_pos, end_pos)
+                    if is_valid:
                             # Make a deep copy of the board to test the move
                             board_copy = copy.deepcopy(board)
                             # Get the piece on the copied board
@@ -132,7 +134,7 @@ def check_game_status(board, color, last_move):
     return False, None
 
 
-def move_piece(board, start_pos, end_pos, last_move):
+def move_piece(board, start_pos, end_pos, last_move, promotion_choice=None):
     """
     Moves a piece from start_pos to end_pos if the move is valid.
 
@@ -197,7 +199,7 @@ def move_piece(board, start_pos, end_pos, last_move):
             promotion_row = 0 if piece.color == 'white' else 7
             if end_row == promotion_row:
                 # Pawn reaches the last rank, promotion occurs
-                promoted_piece = piece.promote_pawn(piece.color, end_pos)
+                promoted_piece = piece.promote_pawn(piece.color, end_pos, promotion_choice)
                 board[end_row][end_col] = promoted_piece
                 print(f"{piece.color.capitalize()} Pawn promoted to {type(promoted_piece).__name__} at {end_pos}")
             else:

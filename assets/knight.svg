@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80">
+  <g fill="#FFFFFF" stroke="#000000" stroke-width="2" stroke-linejoin="round">
+    <!-- Horse head and neck -->
+    <path d="M24 62 L26 40 C26 36, 28 28, 30 24
+             L28 18 C28 14, 32 10, 36 10
+             L38 16 C40 14, 44 12, 48 12
+             C54 12, 58 18, 56 24
+             L52 28 C50 30, 50 32, 52 34
+             L56 38 C58 40, 58 44, 56 48
+             L54 62 Z"/>
+    <!-- Eye -->
+    <circle cx="44" cy="20" r="2.5" fill="#000000" stroke="none"/>
+    <!-- Ear -->
+    <path d="M36 10 L34 6 L38 8" fill="#FFFFFF" stroke="#000000" stroke-width="1.5"/>
+    <!-- Nostril -->
+    <circle cx="52" cy="30" r="1.5" fill="#000000" stroke="none"/>
+    <!-- Mane lines -->
+    <path d="M32 14 C30 18, 28 22, 28 26" fill="none" stroke="#000000" stroke-width="1.5"/>
+    <path d="M34 12 C31 16, 29 20, 29 24" fill="none" stroke="#000000" stroke-width="1.5"/>
+    <!-- Base -->
+    <rect x="20" y="62" width="40" height="7" rx="3"/>
+  </g>
+</svg>

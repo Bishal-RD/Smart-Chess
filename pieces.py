@@ -1,16 +1,16 @@
-from utils import position_to_indices
+from utils import position_to_indices, indices_to_position
 
 class Piece:
     def __init__(self, color, position):
         self.color = color  # 'white' or 'black'
         self.position = position
-        
+
     def set_position(self, position):
         if self.is_valid_position(position):
             self.position = position
         else:
             raise ValueError(f"Invalid position: {position}")
-    
+
     def get_position(self):
         return self.position
 
@@ -31,7 +31,7 @@ class King(Piece):
 
     def __str__(self):
         return '\u2654' if self.color == 'white' else '\u265A'
-    
+
     def valid_moves(self, board, start_pos, end_pos):
         """
         Determines if moving the king from start_pos to end_pos is valid.
@@ -51,7 +51,7 @@ class King(Piece):
         except ValueError as e:
             print(e)
             return False
-        
+
         # Calculate movement differences
         col_diff = abs(end_col - start_col)
         row_diff = abs(end_row - start_row)
@@ -64,14 +64,26 @@ class King(Piece):
         # Castling logic can be added here if desired
         return False
 
-    
+    def get_candidate_moves(self, board, position):
+        row, col = position_to_indices(position)
+        moves = []
+        for dr in [-1, 0, 1]:
+            for dc in [-1, 0, 1]:
+                if dr == 0 and dc == 0:
+                    continue
+                nr, nc = row + dr, col + dc
+                if 0 <= nr < 8 and 0 <= nc < 8:
+                    moves.append(indices_to_position(nc, nr))
+        return moves
+
+
 class Queen(Piece):
     def __init__(self, color, position):
         super().__init__(color, position)
-    
+
     def __str__(self):
         return '\u2655' if self.color == 'white' else '\u265B'
-    
+
     def valid_moves(self, board, start_pos, end_pos):
         """
         Determines if moving the queen from start_pos to end_pos is valid.
@@ -91,7 +103,7 @@ class Queen(Piece):
         except ValueError as e:
             print(e)
             return False
-        
+
         col_diff = end_col - start_col
         row_diff = end_row - start_row
 
@@ -141,6 +153,19 @@ class Queen(Piece):
         # If move is not along row, column, or diagonal, invalid
         return False
 
+    def get_candidate_moves(self, board, position):
+        row, col = position_to_indices(position)
+        moves = []
+        for dr, dc in [(-1,0),(1,0),(0,-1),(0,1),(-1,-1),(-1,1),(1,-1),(1,1)]:
+            nr, nc = row + dr, col + dc
+            while 0 <= nr < 8 and 0 <= nc < 8:
+                moves.append(indices_to_position(nc, nr))
+                if board[nr][nc] is not None:
+                    break
+                nr += dr
+                nc += dc
+        return moves
+
 class Rook(Piece):
     def __init__(self, color, position):
         super().__init__(color, position)
@@ -148,7 +173,7 @@ class Rook(Piece):
 
     def __str__(self):
         return '\u2656' if self.color == 'white' else '\u265C'
-    
+
     def valid_moves(self, board, start_pos, end_pos):
         """
         Determines if moving the rook from start_pos to end_pos is valid.
@@ -168,7 +193,7 @@ class Rook(Piece):
         except ValueError as e:
             print(e)
             return False
-        
+
         # Check if move is along the same row or column
         if start_row == end_row or start_col == end_col:
             # Determine the direction of movement
@@ -177,7 +202,7 @@ class Rook(Piece):
                 col_step = 1
             elif start_col > end_col:
                 col_step = -1
-            
+
             row_step = 0
             if start_row < end_row:
                 row_step = 1
@@ -201,13 +226,26 @@ class Rook(Piece):
         # If move is not along row or column, invalid
         return False
 
+    def get_candidate_moves(self, board, position):
+        row, col = position_to_indices(position)
+        moves = []
+        for dr, dc in [(-1,0),(1,0),(0,-1),(0,1)]:
+            nr, nc = row + dr, col + dc
+            while 0 <= nr < 8 and 0 <= nc < 8:
+                moves.append(indices_to_position(nc, nr))
+                if board[nr][nc] is not None:
+                    break
+                nr += dr
+                nc += dc
+        return moves
+
 class Bishop(Piece):
     def __init__(self, color, position):
         super().__init__(color, position)
-    
+
     def __str__(self):
         return '\u2657' if self.color == 'white' else '\u265D'
-    
+
     def valid_moves(self, board, start_pos, end_pos):
         """
         Determines if moving the bishop from start_pos to end_pos is valid.
@@ -227,11 +265,11 @@ class Bishop(Piece):
         except ValueError as e:
             print(e)
             return False
-        
+
         # Calculate movement differences
         col_diff = end_col - start_col
         row_diff = end_row - start_row
-        
+
         # Check if move is along a diagonal
         if abs(col_diff) == abs(row_diff):
             # Determine the direction of movement
@@ -255,13 +293,26 @@ class Bishop(Piece):
         # If move is not along a diagonal, invalid
         return False
 
+    def get_candidate_moves(self, board, position):
+        row, col = position_to_indices(position)
+        moves = []
+        for dr, dc in [(-1,-1),(-1,1),(1,-1),(1,1)]:
+            nr, nc = row + dr, col + dc
+            while 0 <= nr < 8 and 0 <= nc < 8:
+                moves.append(indices_to_position(nc, nr))
+                if board[nr][nc] is not None:
+                    break
+                nr += dr
+                nc += dc
+        return moves
+
 class Knight(Piece):
     def __init__(self, color, position):
         super().__init__(color, position)
-    
+
     def __str__(self):
         return '\u2658' if self.color == 'white' else '\u265E'
-    
+
     def valid_moves(self, board, start_pos, end_pos):
         """
         Determines if moving the knight from start_pos to end_pos is valid.
@@ -281,11 +332,11 @@ class Knight(Piece):
         except ValueError as e:
             print(e)
             return False
-        
+
         # Calculate movement differences
         col_diff = abs(end_col - start_col)
         row_diff = abs(end_row - start_row)
-        
+
         # Check if the move is a valid knight move
         if (col_diff == 2 and row_diff == 1) or (col_diff == 1 and row_diff == 2):
             target_piece = board[end_row][end_col]
@@ -295,14 +346,23 @@ class Knight(Piece):
         # If none of the valid moves apply
         return False
 
+    def get_candidate_moves(self, board, position):
+        row, col = position_to_indices(position)
+        moves = []
+        for dr, dc in [(-2,-1),(-2,1),(-1,-2),(-1,2),(1,-2),(1,2),(2,-1),(2,1)]:
+            nr, nc = row + dr, col + dc
+            if 0 <= nr < 8 and 0 <= nc < 8:
+                moves.append(indices_to_position(nc, nr))
+        return moves
+
 class Pawn(Piece):
     def __init__(self, color, position):
         super().__init__(color, position)
         self.has_moved = False  # Tracks whether the pawn has moved
-        
+
     def __str__(self):
         return '\u2659' if self.color == 'white' else '\u265F'
-    
+
     def valid_moves(self, board, start_pos, end_pos, last_move):
         """
         Determines if moving the pawn from start_pos to end_pos is valid.
@@ -322,7 +382,7 @@ class Pawn(Piece):
         except ValueError as e:
             print(e)
             return False
-        
+
         # Calculate the direction of movement
         if self.color == 'white':
             direction = -1  # White moves up (decreasing row index)
@@ -332,7 +392,7 @@ class Pawn(Piece):
         # Calculate movement differences
         col_diff = end_col - start_col
         row_diff = end_row - start_row
-    
+
         # Check if the pawn moves forward
         if col_diff == 0:
             # Moving forward
@@ -347,7 +407,7 @@ class Pawn(Piece):
                     if (board[intermediate_row][start_col] is None and
                             board[end_row][end_col] is None):
                         return True
-                    
+
         elif abs(col_diff) == 1 and row_diff == direction:
             # Diagonal capture
             target_piece = board[end_row][end_col]
@@ -371,19 +431,49 @@ class Pawn(Piece):
 
         # If none of the valid moves apply
         return False
-    
-    def promote_pawn(self, color, end_pos):
+
+    def get_candidate_moves(self, board, position, last_move=None):
+        row, col = position_to_indices(position)
+        direction = -1 if self.color == 'white' else 1
+        moves = []
+        # Forward one
+        nr = row + direction
+        if 0 <= nr < 8:
+            moves.append(indices_to_position(col, nr))
+        # Forward two (if hasn't moved)
+        nr = row + 2 * direction
+        if 0 <= nr < 8 and not self.has_moved:
+            moves.append(indices_to_position(col, nr))
+        # Diagonal captures (including en passant)
+        for dc in [-1, 1]:
+            nc = col + dc
+            nr = row + direction
+            if 0 <= nr < 8 and 0 <= nc < 8:
+                moves.append(indices_to_position(nc, nr))
+        return moves
+
+    def promote_pawn(self, color, end_pos, choice=None):
         """
         Promotes a pawn to a new piece chosen by the player.
 
         Parameters:
         - color: The color of the pawn ('white' or 'black').
+        - end_pos: The position string for the promoted piece.
+        - choice: Optional preset choice ('Q', 'R', 'B', 'N'). If None, prompts interactively.
 
         Returns:
         - The new piece object to replace the pawn.
         """
-        # In a real game, you might prompt the user for input.
-        # For this example, we'll default to a Queen or allow the player to choose.
+        if choice:
+            choice = choice.upper()
+            if choice == 'Q':
+                return Queen(color, end_pos)
+            elif choice == 'R':
+                return Rook(color, end_pos)
+            elif choice == 'B':
+                return Bishop(color, end_pos)
+            elif choice == 'N':
+                return Knight(color, end_pos)
 
         while True:
             choice = input(f"Promote pawn to (Q)ueen, (R)ook, (B)ishop, or k(N)ight? ").strip().upper()
@@ -397,4 +487,3 @@ class Pawn(Piece):
                 return Knight(color, end_pos)
             else:
                 print("Invalid choice. Please enter Q, R, B, or N.")
-

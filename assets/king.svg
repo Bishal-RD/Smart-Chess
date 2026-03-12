@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80">
+  <g fill="#FFFFFF" stroke="#000000" stroke-width="2" stroke-linejoin="round">
+    <!-- Cross -->
+    <rect x="37" y="6" width="6" height="16" rx="1"/>
+    <rect x="32" y="10" width="16" height="6" rx="1"/>
+    <!-- Head -->
+    <path d="M28 24 C28 20, 52 20, 52 24 L54 34 C54 38, 26 38, 26 34 Z"/>
+    <!-- Neck band -->
+    <rect x="26" y="35" width="28" height="5" rx="2"/>
+    <!-- Body -->
+    <path d="M24 40 L22 64 C22 68, 58 68, 58 64 L56 40 Z"/>
+    <!-- Base band -->
+    <rect x="20" y="63" width="40" height="7" rx="3"/>
+    <!-- Crown points -->
+    <path d="M30 25 L32 30 M40 23 L40 30 M50 25 L48 30" fill="none" stroke-width="1.5"/>
+  </g>
+</svg>

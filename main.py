@@ -1,14 +1,16 @@
+import sys
+
 from utils import get_piece_info
-from game_logic import move_piece
+from game_logic import move_piece, check_game_status
 from board import initialize_board, print_board
-from game_logic import check_game_status
 from algorithm import minimax
 
-def main():
+
+def terminal_main():
     board = initialize_board()
     print("Welcome to the Chess Game!")
     print_board(board)
-    
+
     human_color = 'white'  # Human plays white
     ai_color = 'black'     # AI plays black
     turn = 'white'         # White starts first
@@ -55,7 +57,7 @@ def main():
                                           maximizing_player=True, current_color=ai_color, last_move=last_move)
             if ai_move:
                 start_pos, end_pos = ai_move
-                move_piece(board, start_pos, end_pos, last_move)
+                move_piece(board, start_pos, end_pos, last_move, promotion_choice='Q')
                 print(f"AI moved from {start_pos} to {end_pos}")
                 print_board(board)
                 # Switch turns
@@ -71,6 +73,21 @@ def main():
         print("Black wins the game!")
     elif result == 'draw':
         print("The game ended in a draw.")
+
+
+def main():
+    if '--terminal' in sys.argv or '-t' in sys.argv:
+        terminal_main()
+    else:
+        try:
+            from gui import ChessGUI
+            game = ChessGUI()
+            game.run()
+        except ImportError:
+            print("pygame not installed. Falling back to terminal mode.")
+            print("Install with: pip install pygame")
+            terminal_main()
+
 
 if __name__ == "__main__":
     main()
