@@ -1,17 +1,20 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80">
-  <g fill="#FFFFFF" stroke="#000000" stroke-width="2" stroke-linejoin="round">
-    <!-- Cross -->
-    <rect x="37" y="6" width="6" height="16" rx="1"/>
-    <rect x="32" y="10" width="16" height="6" rx="1"/>
-    <!-- Head -->
-    <path d="M28 24 C28 20, 52 20, 52 24 L54 34 C54 38, 26 38, 26 34 Z"/>
-    <!-- Neck band -->
-    <rect x="26" y="35" width="28" height="5" rx="2"/>
-    <!-- Body -->
-    <path d="M24 40 L22 64 C22 68, 58 68, 58 64 L56 40 Z"/>
-    <!-- Base band -->
-    <rect x="20" y="63" width="40" height="7" rx="3"/>
-    <!-- Crown points -->
-    <path d="M30 25 L32 30 M40 23 L40 30 M50 25 L48 30" fill="none" stroke-width="1.5"/>
-  </g>
+  <path d="M 22 72
+           L 58 72
+           C 58 65, 52 62, 48 55
+           C 46 45, 45 35, 45 28
+           L 50 28 L 50 24 L 45 24
+           C 55 22, 55 14, 43 14
+           L 43 11
+           L 47 11 L 47 7 L 43 7
+           L 43 2 L 37 2 L 37 7
+           L 33 7 L 33 11 L 37 11
+           L 37 14
+           C 25 14, 25 22, 35 24
+           L 30 24 L 30 28 L 35 28
+           C 35 35, 34 45, 32 55
+           C 28 62, 22 65, 22 72 Z"
+        fill="#FFFFFF" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M 26 62 L 54 62" fill="none" stroke="#000000" stroke-width="2" stroke-linecap="round"/>
+  <path d="M 32 55 L 48 55" fill="none" stroke="#000000" stroke-width="2" stroke-linecap="round"/>
 </svg>
