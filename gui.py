@@ -48,10 +48,11 @@ class ChessGUI:
         pygame.display.set_caption("Smart Chess")
         self.clock = pygame.time.Clock()
 
-        self.label_font = pygame.font.SysFont(None, 16)
-        self.title_font = pygame.font.SysFont(None, 30, bold=True)
-        self.info_font = pygame.font.SysFont(None, 22)
-        self.small_font = pygame.font.SysFont(None, 18)
+        _fn = "ubuntu"
+        self.label_font = pygame.font.SysFont(_fn, 16)
+        self.title_font = pygame.font.SysFont(_fn, 24, bold=True)
+        self.info_font = pygame.font.SysFont(_fn, 18)
+        self.small_font = pygame.font.SysFont(_fn, 16)
 
         self._load_pieces()
         self.reset_game()
@@ -189,24 +190,24 @@ class ChessGUI:
         # Title
         t = self.title_font.render("Smart Chess", True, ACCENT)
         self.screen.blit(t, (x, y))
-        y += 36
+        y += 32
 
         pygame.draw.line(self.screen, (80, 80, 80), (x, y), (WIN_W - 18, y))
-        y += 16
+        y += 14
 
         # Turn indicator
         dot_color = (255, 255, 255) if self.turn == 'white' else (40, 40, 40)
-        pygame.draw.circle(self.screen, dot_color, (x + 6, y + 8), 6)
-        pygame.draw.circle(self.screen, MUTED, (x + 6, y + 8), 6, 1)
+        pygame.draw.circle(self.screen, dot_color, (x + 6, y + 7), 6)
+        pygame.draw.circle(self.screen, MUTED, (x + 6, y + 7), 6, 1)
         turn_txt = self.info_font.render(f"{self.turn.capitalize()}'s turn", True, TEXT)
         self.screen.blit(turn_txt, (x + 18, y))
-        y += 28
+        y += 26
 
         # Status
         sc = ACCENT if not self.game_over else CHECK_COL
         st = self.info_font.render(self.status, True, sc)
         self.screen.blit(st, (x, y))
-        y += 36
+        y += 30
 
         pygame.draw.line(self.screen, (80, 80, 80), (x, y), (WIN_W - 18, y))
         y += 12
