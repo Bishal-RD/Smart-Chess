@@ -1,8 +1,16 @@
-import pygame
-import sys
 import os
+import sys
 import time
 import threading
+
+# Fix blurry display on high-DPI screens (must be before pygame.init)
+try:
+    import ctypes
+    ctypes.windll.shcore.SetProcessDpiAwareness(2)
+except Exception:
+    os.environ.setdefault('SDL_VIDEO_X11_NET_WM_BYPASS_COMPOSITOR', '0')
+
+import pygame
 
 from board import initialize_board
 from game_logic import move_piece, check_game_status, get_all_legal_moves, is_in_check
