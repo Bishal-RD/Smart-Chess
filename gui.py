@@ -38,6 +38,8 @@ TIMER_LOW = (120, 40, 40)
 
 TIMER_SECONDS = 600  # 10 minutes per side
 
+PIECE_VALUE = {'Pawn': 1, 'Knight': 3, 'Bishop': 3, 'Rook': 5, 'Queen': 9, 'King': 0}
+
 WHITE_PIECE = (255, 255, 255)
 BLACK_PIECE = (50, 50, 50)
 
@@ -236,14 +238,24 @@ class ChessGUI:
         pygame.draw.line(self.screen, (80, 80, 80), (x, y), (WIN_W - 18, y))
         y += 12
 
-        # Captured pieces
+        # Captured pieces + material advantage
+        white_pts = sum(PIECE_VALUE.get(p, 0) for p, _ in self.captured_by_white)
+        black_pts = sum(PIECE_VALUE.get(p, 0) for p, _ in self.captured_by_black)
+        diff = white_pts - black_pts
+
         cl = self.small_font.render("Captured", True, MUTED)
         self.screen.blit(cl, (x, y))
         y += 22
 
         self._draw_captured_row(x, y, self.captured_by_white)
+        if diff > 0:
+            adv = self.small_font.render(f"+{diff}", True, ACCENT)
+            self.screen.blit(adv, (x + SIDEBAR - 56, y + 2))
         y += 28
         self._draw_captured_row(x, y, self.captured_by_black)
+        if diff < 0:
+            adv = self.small_font.render(f"+{-diff}", True, ACCENT)
+            self.screen.blit(adv, (x + SIDEBAR - 56, y + 2))
         y += 36
 
         pygame.draw.line(self.screen, (80, 80, 80), (x, y), (WIN_W - 18, y))
