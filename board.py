@@ -5,8 +5,9 @@ from utils import position_to_indices
 def print_board(board):
     print("   " + " ".join('a b c d e f g h'.split()))
     print("-"*18)
-    for row_idx, row in enumerate(board):
-        rank = row_idx + 1  # Convert row index to rank
+    for row_idx in range(7, -1, -1):
+        rank = row_idx + 1
+        row = board[row_idx]
         print(f"{rank}| " + " ".join(str(piece) if piece else '.' for piece in row))
 
     # Print horizontal indices ('a' to 'h')
@@ -20,40 +21,40 @@ def initialize_board():
 
     # Create all the pieces with their positions
     all_pieces = [
-        # Black pieces
-        Rook('black', 'a1'),
-        Knight('black', 'b1'),
-        Bishop('black', 'c1'),
-        Queen('black', 'd1'),
-        King('black', 'e1'),
-        Bishop('black', 'f1'),
-        Knight('black', 'g1'),
-        Rook('black', 'h1'),
-        Pawn('black', 'a2'),
-        Pawn('black', 'b2'),
-        Pawn('black', 'c2'),
-        Pawn('black', 'd2'),
-        Pawn('black', 'e2'),
-        Pawn('black', 'f2'),
-        Pawn('black', 'g2'),
-        Pawn('black', 'h2'),
-        # White pieces
-        Pawn('white', 'a7'),
-        Pawn('white', 'b7'),
-        Pawn('white', 'c7'),
-        Pawn('white', 'd7'),
-        Pawn('white', 'e7'),
-        Pawn('white', 'f7'),
-        Pawn('white', 'g7'),
-        Pawn('white', 'h7'),
-        Rook('white', 'a8'),
-        Knight('white', 'b8'),
-        Bishop('white', 'c8'),
-        Queen('white', 'd8'),
-        King('white', 'e8'),
-        Bishop('white', 'f8'),
-        Knight('white', 'g8'),
-        Rook('white', 'h8'),
+        # White pieces (ranks 1-2)
+        Rook('white', 'a1'),
+        Knight('white', 'b1'),
+        Bishop('white', 'c1'),
+        Queen('white', 'd1'),
+        King('white', 'e1'),
+        Bishop('white', 'f1'),
+        Knight('white', 'g1'),
+        Rook('white', 'h1'),
+        Pawn('white', 'a2'),
+        Pawn('white', 'b2'),
+        Pawn('white', 'c2'),
+        Pawn('white', 'd2'),
+        Pawn('white', 'e2'),
+        Pawn('white', 'f2'),
+        Pawn('white', 'g2'),
+        Pawn('white', 'h2'),
+        # Black pieces (ranks 7-8)
+        Pawn('black', 'a7'),
+        Pawn('black', 'b7'),
+        Pawn('black', 'c7'),
+        Pawn('black', 'd7'),
+        Pawn('black', 'e7'),
+        Pawn('black', 'f7'),
+        Pawn('black', 'g7'),
+        Pawn('black', 'h7'),
+        Rook('black', 'a8'),
+        Knight('black', 'b8'),
+        Bishop('black', 'c8'),
+        Queen('black', 'd8'),
+        King('black', 'e8'),
+        Bishop('black', 'f8'),
+        Knight('black', 'g8'),
+        Rook('black', 'h8'),
     ]
 
     # Place each piece on the board according to its position

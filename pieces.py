@@ -385,9 +385,9 @@ class Pawn(Piece):
 
         # Calculate the direction of movement
         if self.color == 'white':
-            direction = -1  # White moves up (decreasing row index)
+            direction = 1   # White moves up (increasing row index)
         else:
-            direction = 1   # Black moves down (increasing row index)
+            direction = -1  # Black moves down (decreasing row index)
 
         # Calculate movement differences
         col_diff = end_col - start_col
@@ -434,7 +434,7 @@ class Pawn(Piece):
 
     def get_candidate_moves(self, board, position, last_move=None):
         row, col = position_to_indices(position)
-        direction = -1 if self.color == 'white' else 1
+        direction = 1 if self.color == 'white' else -1
         moves = []
         # Forward one
         nr = row + direction

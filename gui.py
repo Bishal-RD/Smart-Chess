@@ -114,7 +114,7 @@ class ChessGUI:
     # --- Drawing ---
 
     def _sq_color(self, row, col, selected=False, last_move=False):
-        light = (row + col) % 2 == 0
+        light = (row + col) % 2 == 1
         if selected:
             return SEL_LIGHT if light else SEL_DARK
         if last_move:
@@ -130,7 +130,7 @@ class ChessGUI:
                 is_sel = (row, col) in sel_set
                 is_last = (row, col) in last_set and (row, col) not in sel_set
                 color = self._sq_color(row, col, is_sel, is_last)
-                rect = pygame.Rect(col * SQUARE, row * SQUARE, SQUARE, SQUARE)
+                rect = pygame.Rect(col * SQUARE, (7 - row) * SQUARE, SQUARE, SQUARE)
                 pygame.draw.rect(self.screen, color, rect)
 
         # Check highlight
@@ -138,7 +138,7 @@ class ChessGUI:
             r, c = self.check_sq
             surf = pygame.Surface((SQUARE, SQUARE), pygame.SRCALPHA)
             surf.fill((*CHECK_COL, 160))
-            self.screen.blit(surf, (c * SQUARE, r * SQUARE))
+            self.screen.blit(surf, (c * SQUARE, (7 - r) * SQUARE))
 
         # Legal move indicators
         for pos_str in self.legal_dests:
@@ -151,19 +151,21 @@ class ChessGUI:
             else:
                 pygame.draw.circle(surf, (0, 0, 0, 50),
                                    (SQUARE // 2, SQUARE // 2), 12)
-            self.screen.blit(surf, (c * SQUARE, r * SQUARE))
+            self.screen.blit(surf, (c * SQUARE, (7 - r) * SQUARE))
 
-        # File and rank labels
-        for i in range(8):
-            is_light = (7 + i) % 2 == 0
+        # File labels (a-h) along bottom
+        for col in range(8):
+            is_light = col % 2 == 1
             fc = DARK if is_light else LIGHT
-            lbl = self.label_font.render(chr(ord('a') + i), True, fc)
-            self.screen.blit(lbl, (i * SQUARE + SQUARE - 12, BOARD_PX - 14))
+            lbl = self.label_font.render(chr(ord('a') + col), True, fc)
+            self.screen.blit(lbl, (col * SQUARE + SQUARE - 12, BOARD_PX - 14))
 
-            is_light2 = i % 2 == 0
-            rc = DARK if is_light2 else LIGHT
-            lbl2 = self.label_font.render(str(i + 1), True, rc)
-            self.screen.blit(lbl2, (2, i * SQUARE + 2))
+        # Rank labels (1-8) along left
+        for row in range(8):
+            is_light = row % 2 == 1
+            rc = DARK if is_light else LIGHT
+            lbl = self.label_font.render(str(row + 1), True, rc)
+            self.screen.blit(lbl, (2, (7 - row) * SQUARE + 2))
 
     def draw_pieces(self):
         for row in range(8):
@@ -175,7 +177,7 @@ class ChessGUI:
                     if img:
                         rect = img.get_rect(center=(
                             col * SQUARE + SQUARE // 2,
-                            row * SQUARE + SQUARE // 2
+                            (7 - row) * SQUARE + SQUARE // 2
                         ))
                         self.screen.blit(img, rect)
 
@@ -419,7 +421,7 @@ class ChessGUI:
                 start_pos = indices_to_position(self.selected[1], self.selected[0])
                 piece = self.board[self.selected[0]][self.selected[1]]
                 er, ec = position_to_indices(clicked)
-                promo_row = 0 if piece.color == 'white' else 7
+                promo_row = 7 if piece.color == 'white' else 0
                 if isinstance(piece, Pawn) and er == promo_row:
                     self.promo_pending = True
                     self.promo_move = (start_pos, clicked)
@@ -449,7 +451,7 @@ class ChessGUI:
 
     def _pixel_to_board(self, mx, my):
         if 0 <= mx < BOARD_PX and 0 <= my < BOARD_PX:
-            return my // SQUARE, mx // SQUARE
+            return 7 - (my // SQUARE), mx // SQUARE
         return None
 
     # --- Main Loop ---

@@ -196,7 +196,7 @@ def move_piece(board, start_pos, end_pos, last_move, promotion_choice=None):
 
         # Handle pawn promotion
         if isinstance(piece, Pawn):
-            promotion_row = 0 if piece.color == 'white' else 7
+            promotion_row = 7 if piece.color == 'white' else 0
             if end_row == promotion_row:
                 # Pawn reaches the last rank, promotion occurs
                 promoted_piece = piece.promote_pawn(piece.color, end_pos, promotion_choice)
@@ -249,7 +249,7 @@ def move_piece_simulation(board, piece, start_pos, end_pos, last_move):
 
     # Handle pawn promotion
     if isinstance(piece, Pawn):
-        promotion_row = 0 if piece.color == 'white' else 7
+        promotion_row = 7 if piece.color == 'white' else 0
         if end_row == promotion_row:
             # Promote to Queen by default in simulation
             promoted_piece = Queen(piece.color, end_pos)

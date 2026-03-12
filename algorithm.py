@@ -35,9 +35,9 @@ def evaluate_board(board, color):
                 if isinstance(piece, Pawn):
                     # Pawns get bonus for advancing
                     if piece.color == 'white':
-                        position_bonus = (6 - row)
-                    else:
                         position_bonus = (row - 1)
+                    else:
+                        position_bonus = (6 - row)
                 # Combine piece value and positional bonus
                 value += position_bonus
                 if piece.color == color:
